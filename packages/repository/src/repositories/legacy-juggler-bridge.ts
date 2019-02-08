@@ -283,15 +283,19 @@ export class DefaultCrudRepository<T extends Entity, ID>
    * @param targetRepo Target repository instance
    */
   protected _createHasManyThroughRepositoryFactoryFor<
+    Through extends Entity,
+    ThroughID,
     Target extends Entity,
     TargetID,
     ForeignKeyType
   >(
     relationName: string,
+    throughRepoGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
   ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
     return this.createHasManyThroughRepositoryFactoryFor(
       relationName,
+      throughRepoGetter,
       targetRepoGetter,
     );
   }
@@ -323,19 +327,24 @@ export class DefaultCrudRepository<T extends Entity, ID>
    * @param targetRepo Target repository instance
    */
   protected createHasManyThroughRepositoryFactoryFor<
+    Through extends Entity,
+    ThroughID,
     Target extends Entity,
     TargetID,
     ForeignKeyType
   >(
     relationName: string,
+    throughRepoGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
   ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
     const meta = this.entityClass.definition.relations[relationName];
     return createHasManyThroughRepositoryFactory<
+      Through,
+      ThroughID,
       Target,
       TargetID,
       ForeignKeyType
-    >(meta as HasManyThroughDefinition, targetRepoGetter);
+    >(meta as HasManyThroughDefinition, throughRepoGetter, targetRepoGetter);
   }
 
   protected _createHasOneRepositoryFactoryFor<
