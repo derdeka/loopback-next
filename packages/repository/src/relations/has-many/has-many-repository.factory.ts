@@ -21,9 +21,9 @@ const debug = debugFactory('loopback:repository:has-many-repository-factory');
 
 export type HasManyRepositoryFactory<Target extends Entity, ForeignKeyType> = (
   fkValue: ForeignKeyType,
-) => HasManyRepository<Target> | Promise<HasManyRepository<Target>>;
+) => HasManyRepository<Target>;
 
-export interface Through extends Entity {}
+export interface IThrough extends Entity {}
 
 /**
  * Enforces a constraint on a repository based on a relationship contract
@@ -42,48 +42,41 @@ export function createHasManyRepositoryFactory<
   Target extends Entity,
   TargetID,
   ForeignKeyType,
-  Through = Through,
+  Through = IThrough,
   ThroughID = string
 >(
   relationMetadata: HasManyDefinition,
   targetRepositoryGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-  throughRepositoryGetter?: Getter<EntityCrudRepository<Through, ThroughID>>,
+  throughRepositoryGetter?: Getter<EntityCrudRepository<IThrough, ThroughID>>,
 ): HasManyRepositoryFactory<Target, ForeignKeyType> {
   const meta = resolveHasManyMetadata(relationMetadata);
   debug('Resolved HasMany relation metadata: %o', meta);
-  // tslint:disable-next-line:no-any
-  function createRepository(constraint: any) {
+  return function(fkValue: ForeignKeyType) {
+    async function getConstraint(): Promise<DataObject<Target>> {
+      // tslint:disable-next-line:no-any
+      let constraint: any = {[meta.keyTo]: fkValue};
+      if (meta.targetFkName && throughRepositoryGetter) {
+        const throughRepo = await throughRepositoryGetter();
+        const throughInstances = await throughRepo.find(
+          constrainFilter(undefined, constraint),
+        );
+        if (!throughInstances.length) {
+          const id = 'through constraint ' + JSON.stringify(constraint);
+          throw new EntityNotFoundError(throughRepo.entityClass, id);
+        }
+        constraint = {
+          or: throughInstances.map((throughInstance: IThrough) => {
+            return {id: throughInstance[meta.targetFkName as keyof IThrough]};
+          }),
+        };
+      }
+      return constraint as DataObject<Target>;
+    }
     return new DefaultHasManyRepository<
       Target,
       TargetID,
       EntityCrudRepository<Target, TargetID>
-    >(targetRepositoryGetter, constraint as DataObject<Target>);
-  }
-  if (meta.targetFkName && throughRepositoryGetter) {
-    return async function(fkValue: ForeignKeyType) {
-      // tslint:disable-next-line:no-any
-      const throughConstraint: any = {[meta.keyTo]: fkValue};
-      const throughRepo = await throughRepositoryGetter();
-      const throughInstances = await throughRepo.find(
-        constrainFilter(undefined, throughConstraint),
-      );
-      if (!throughInstances.length) {
-        const id = 'through constraint ' + JSON.stringify(throughConstraint);
-        throw new EntityNotFoundError(throughRepo.entityClass, id);
-      }
-      // tslint:disable-next-line:no-any
-      const constraint: any = {
-        or: throughInstances.map((throughInstance: Through) => {
-          return {id: throughInstance[meta.targetFkName as keyof Through]};
-        }),
-      };
-      return createRepository(constraint);
-    };
-  }
-  return function(fkValue: ForeignKeyType) {
-    // tslint:disable-next-line:no-any
-    const constraint: any = {[meta.keyTo]: fkValue};
-    return createRepository(constraint);
+    >(targetRepositoryGetter, getConstraint);
   };
 }
 
