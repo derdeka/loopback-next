@@ -23,13 +23,10 @@ import {
   BelongsToDefinition,
   HasManyDefinition,
   HasManyRepositoryFactory,
-  HasManyThroughDefinition,
-  HasManyThroughRepositoryFactory,
   HasOneDefinition,
   HasOneRepositoryFactory,
   createBelongsToAccessor,
   createHasManyRepositoryFactory,
-  createHasManyThroughRepositoryFactory,
   createHasOneRepositoryFactory,
 } from '../relations';
 import {isTypeResolver, resolveType} from '../type-resolver';
@@ -271,80 +268,6 @@ export class DefaultCrudRepository<T extends Entity, ID>
       targetRepoGetter,
       this,
     );
-  }
-
-  /**
-   * @deprecated
-   * Function to create a constrained relation repository factory
-   *
-   * Use `this.createHasManyThroughRepositoryFactoryFor()` instaed
-   *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
-   */
-  protected _createHasManyThroughRepositoryFactoryFor<
-    Through extends Entity,
-    ThroughID,
-    Target extends Entity,
-    TargetID,
-    ForeignKeyType
-  >(
-    relationName: string,
-    throughRepoGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
-    targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
-    return this.createHasManyThroughRepositoryFactoryFor(
-      relationName,
-      throughRepoGetter,
-      targetRepoGetter,
-    );
-  }
-
-  /**
-   * Function to create a constrained relation repository factory
-   *
-   * ```ts
-   * class CustomerRepository extends DefaultCrudRepository<
-   *   Customer,
-   *   typeof Customer.prototype.id
-   * > {
-   *   public readonly orders: HasManyThroughRepositoryFactory<Order, typeof Customer.prototype.id>;
-   *
-   *   constructor(
-   *     protected db: juggler.DataSource,
-   *     orderRepository: EntityCrudRepository<Order, typeof Order.prototype.id>,
-   *   ) {
-   *     super(Customer, db);
-   *     this.orders = this._createHasManyThroughRepositoryFactoryFor(
-   *       'orders',
-   *       orderRepository,
-   *     );
-   *   }
-   * }
-   * ```
-   *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
-   */
-  protected createHasManyThroughRepositoryFactoryFor<
-    Through extends Entity,
-    ThroughID,
-    Target extends Entity,
-    TargetID,
-    ForeignKeyType
-  >(
-    relationName: string,
-    throughRepoGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
-    targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
-    const meta = this.entityClass.definition.relations[relationName];
-    return createHasManyThroughRepositoryFactory<
-      Through,
-      ThroughID,
-      Target,
-      TargetID,
-      ForeignKeyType
-    >(meta as HasManyThroughDefinition, throughRepoGetter, targetRepoGetter);
   }
 
   protected _createHasOneRepositoryFactoryFor<

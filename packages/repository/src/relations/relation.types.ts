@@ -11,7 +11,6 @@ export enum RelationType {
   embedsMany = 'embedsMany',
   embedsOne = 'embedsOne',
   hasMany = 'hasMany',
-  hasManyThrough = 'hasManyThrough',
   hasOne = 'hasOne',
   referencesMany = 'referencesMany',
   referencesOne = 'referencesOne',
@@ -48,27 +47,14 @@ export interface HasManyDefinition extends RelationDefinitionBase {
   type: RelationType.hasMany;
 
   /**
-   * The foreign key used by the target model.
-   *
-   * E.g. when a Customer has many Order instances, then keyTo is "customerId".
-   * Note that "customerId" is the default FK assumed by the framework, users
-   * can provide a custom FK name by setting "keyTo".
-   */
-  keyTo?: string;
-}
-
-export interface HasManyThroughDefinition extends RelationDefinitionBase {
-  type: RelationType.hasManyThrough;
-
-  /**
    * The through model of this relation.
    *
    * E.g. when a Customer has many Order instances and a Seller has many Order instances, then Order is through.
    */
-  through: TypeResolver<Entity, typeof Entity>;
+  through?: TypeResolver<Entity, typeof Entity>;
 
   /**
-   * The foreign key used by the target model.
+   * The foreign key used by the target or through model.
    *
    * E.g. when a Customer has many Order instances, then keyTo is "customerId".
    * Note that "customerId" is the default FK assumed by the framework, users
@@ -76,6 +62,9 @@ export interface HasManyThroughDefinition extends RelationDefinitionBase {
    */
   keyTo?: string;
 
+  /**
+   * The foreign key used by the target model when using a through model.
+   */
   targetFkName?: string;
 }
 
@@ -112,7 +101,6 @@ export interface HasOneDefinition extends RelationDefinitionBase {
 export type RelationMetadata =
   | BelongsToDefinition
   | HasManyDefinition
-  | HasManyThroughDefinition
   | HasOneDefinition
   // TODO(bajtos) add other relation types and remove RelationDefinitionBase once
   // all relation types are covered.
