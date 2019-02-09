@@ -69,8 +69,10 @@ describe('relation repository', () => {
 
   context('DefaultHasManyEntityCrudRepository', () => {
     it('can create related model instance', async () => {
-      const constraint: Partial<Customer> = {age: 25};
-      const hasManyCrudInstance = givenDefaultHasManyInstance(constraint);
+      const getConstraint: () => Promise<Partial<Customer>> = async () => ({
+        age: 25,
+      });
+      const hasManyCrudInstance = givenDefaultHasManyInstance(getConstraint);
       await hasManyCrudInstance.create({id: 1, name: 'Joe'});
       sinon.assert.calledWithMatch(customerRepo.stubs.create, {
         id: 1,
@@ -80,8 +82,10 @@ describe('relation repository', () => {
     });
 
     it('can find related model instance', async () => {
-      const constraint: Partial<Customer> = {name: 'Jane'};
-      const hasManyCrudInstance = givenDefaultHasManyInstance(constraint);
+      const getConstraint: () => Promise<Partial<Customer>> = async () => ({
+        name: 'Jane',
+      });
+      const hasManyCrudInstance = givenDefaultHasManyInstance(getConstraint);
       await hasManyCrudInstance.find({where: {id: 3}});
       sinon.assert.calledWithMatch(customerRepo.stubs.find, {
         where: {id: 3, name: 'Jane'},
@@ -90,8 +94,10 @@ describe('relation repository', () => {
 
     context('patch', () => {
       it('can patch related model instance', async () => {
-        const constraint: Partial<Customer> = {name: 'Jane'};
-        const hasManyCrudInstance = givenDefaultHasManyInstance(constraint);
+        const getConstraint: () => Promise<Partial<Customer>> = async () => ({
+          name: 'Jane',
+        });
+        const hasManyCrudInstance = givenDefaultHasManyInstance(getConstraint);
         await hasManyCrudInstance.patch({country: 'US'}, {id: 3});
         sinon.assert.calledWith(
           customerRepo.stubs.updateAll,
@@ -101,8 +107,10 @@ describe('relation repository', () => {
       });
 
       it('cannot override the constrain data', async () => {
-        const constraint: Partial<Customer> = {name: 'Jane'};
-        const hasManyCrudInstance = givenDefaultHasManyInstance(constraint);
+        const getConstraint: () => Promise<Partial<Customer>> = async () => ({
+          name: 'Jane',
+        });
+        const hasManyCrudInstance = givenDefaultHasManyInstance(getConstraint);
         await expect(
           hasManyCrudInstance.patch({name: 'Joe'}),
         ).to.be.rejectedWith(/Property "name" cannot be changed!/);
@@ -110,8 +118,10 @@ describe('relation repository', () => {
     });
 
     it('can delete related model instance', async () => {
-      const constraint: Partial<Customer> = {name: 'Jane'};
-      const hasManyCrudInstance = givenDefaultHasManyInstance(constraint);
+      const getConstraint: () => Promise<Partial<Customer>> = async () => ({
+        name: 'Jane',
+      });
+      const hasManyCrudInstance = givenDefaultHasManyInstance(getConstraint);
       await hasManyCrudInstance.delete({id: 3});
       sinon.assert.calledWith(customerRepo.stubs.deleteAll, {
         id: 3,
@@ -142,11 +152,13 @@ describe('relation repository', () => {
     customerRepo = createStubInstance(CustomerRepository);
   }
 
-  function givenDefaultHasManyInstance(constraint: DataObject<Customer>) {
+  function givenDefaultHasManyInstance(
+    getConstraint: () => Promise<DataObject<Customer>>,
+  ) {
     return new DefaultHasManyRepository<
       Customer,
       typeof Customer.prototype.id,
       CustomerRepository
-    >(Getter.fromValue(customerRepo), constraint);
+    >(Getter.fromValue(customerRepo), getConstraint);
   }
 });
