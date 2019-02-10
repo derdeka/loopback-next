@@ -78,7 +78,7 @@ export function createHasManyRepositoryFactory<
       Target,
       TargetID,
       EntityCrudRepository<Target, TargetID>
-    >(targetRepositoryGetter, getConstraint);
+    >(targetRepositoryGetter, getConstraint, throughRepositoryGetter);
   };
 }
 
