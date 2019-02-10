@@ -69,7 +69,12 @@ export class DefaultHasManyRepository<
    */
   constructor(
     public getTargetRepository: Getter<TargetRepository>,
-    public getConstraint: () => Promise<DataObject<TargetEntity>>,
+    public getConstraint: (
+      targetInstance?: TargetEntity,
+    ) => Promise<DataObject<TargetEntity>>,
+    public getThroughRepository?: Getter<
+      EntityCrudRepository<Entity, TargetID>
+    >,
   ) {}
 
   async create(
@@ -77,10 +82,19 @@ export class DefaultHasManyRepository<
     options?: Options,
   ): Promise<TargetEntity> {
     const targetRepository = await this.getTargetRepository();
-    return targetRepository.create(
-      constrainDataObject(targetModelData, await this.getConstraint()),
+    const targetInstance = await targetRepository.create(
+      this.getThroughRepository
+        ? targetModelData
+        : constrainDataObject(targetModelData, await this.getConstraint()),
       options,
     );
+    if (this.getThroughRepository) {
+      const throughRepository = await this.getThroughRepository();
+      await throughRepository.create(
+        constrainDataObject({}, await this.getConstraint(targetInstance)),
+      );
+    }
+    return targetInstance;
   }
 
   async find(

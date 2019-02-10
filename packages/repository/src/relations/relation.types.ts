@@ -54,7 +54,7 @@ export interface HasManyDefinition extends RelationDefinitionBase {
   through?: TypeResolver<Entity, typeof Entity>;
 
   /**
-   * The foreign key used by the target or through model.
+   * The foreign key used by the target or through model to reference the source model.
    *
    * E.g. when a Customer has many Order instances, then keyTo is "customerId".
    * Note that "customerId" is the default FK assumed by the framework, users
@@ -63,9 +63,14 @@ export interface HasManyDefinition extends RelationDefinitionBase {
   keyTo?: string;
 
   /**
-   * The foreign key used by the target model when using a through model.
+   * The foreign key used by the through model to reference the target model.
    */
   targetFkName?: string;
+
+  /*
+   * The primary key in the target model when using through, e.g. Seller#id.
+   */
+  targetPrimaryKey?: string;
 }
 
 export interface BelongsToDefinition extends RelationDefinitionBase {
