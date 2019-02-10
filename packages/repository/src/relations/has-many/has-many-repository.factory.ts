@@ -23,8 +23,6 @@ export type HasManyRepositoryFactory<Target extends Entity, ForeignKeyType> = (
   fkValue: ForeignKeyType,
 ) => HasManyRepository<Target>;
 
-export interface IThrough extends Entity {}
-
 /**
  * Enforces a constraint on a repository based on a relationship contract
  * between models. For example, if a Customer model is related to an Order model
@@ -41,21 +39,25 @@ export interface IThrough extends Entity {}
 export function createHasManyRepositoryFactory<
   Target extends Entity,
   TargetID,
-  ForeignKeyType,
-  Through = IThrough,
-  ThroughID = string
+  ForeignKeyType
 >(
   relationMetadata: HasManyDefinition,
   targetRepositoryGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-  throughRepositoryGetter?: Getter<EntityCrudRepository<IThrough, ThroughID>>,
+  throughRepositoryGetter?: Getter<EntityCrudRepository<Entity, TargetID>>,
 ): HasManyRepositoryFactory<Target, ForeignKeyType> {
   const meta = resolveHasManyMetadata(relationMetadata);
   debug('Resolved HasMany relation metadata: %o', meta);
-  return function(fkValue: ForeignKeyType) {
-    async function getConstraint(): Promise<DataObject<Target>> {
+  return function(fkValue?: ForeignKeyType) {
+    async function getConstraint(
+      targetInstance: Target,
+    ): Promise<DataObject<Target>> {
       // tslint:disable-next-line:no-any
       let constraint: any = {[meta.keyTo]: fkValue};
-      if (meta.targetFkName && throughRepositoryGetter) {
+      if (targetInstance && meta.targetFkName) {
+        constraint[meta.targetFkName] =
+          targetInstance[meta.targetPrimaryKey as keyof Target];
+      }
+      if (!targetInstance && meta.targetFkName && throughRepositoryGetter) {
         const throughRepo = await throughRepositoryGetter();
         const throughInstances = await throughRepo.find(
           constrainFilter(undefined, constraint),
@@ -65,8 +67,8 @@ export function createHasManyRepositoryFactory<
           throw new EntityNotFoundError(throughRepo.entityClass, id);
         }
         constraint = {
-          or: throughInstances.map((throughInstance: IThrough) => {
-            return {id: throughInstance[meta.targetFkName as keyof IThrough]};
+          or: throughInstances.map((throughInstance: Entity) => {
+            return {id: throughInstance[meta.targetFkName as keyof Entity]};
           }),
         };
       }
@@ -137,7 +139,14 @@ function resolveHasManyMetadata(
       } is missing definition of target foreign key ${targetFkName}`;
       throw new InvalidRelationError(reason, relationMeta);
     }
-    Object.assign(relationMeta, {targetFkName});
+    const targetPrimaryKey = targetModel.definition.idProperties()[0];
+    if (!targetPrimaryKey) {
+      const reason = `${
+        targetModel.modelName
+      } does not have any primary key (id property)`;
+      throw new InvalidRelationError(reason, relationMeta);
+    }
+    Object.assign(relationMeta, {targetFkName, targetPrimaryKey});
   }
 
   const defaultFkName = camelCase(sourceModel.modelName + '_id');
