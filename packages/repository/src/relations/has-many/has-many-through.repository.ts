@@ -17,7 +17,7 @@ import {EntityCrudRepository} from '../../repositories/repository';
 /**
  * CRUD operations for a target repository of a HasMany relation
  */
-export interface HasManyRepository<Target extends Entity> {
+export interface HasManyThroughRepository<Target extends Entity> {
   /**
    * Create a target model instance
    * @param targetModelData The target model data
@@ -56,11 +56,14 @@ export interface HasManyRepository<Target extends Entity> {
   ): Promise<Count>;
 }
 
-export class DefaultHasManyRepository<
+export class DefaultHasManyThroughRepository<
   TargetEntity extends Entity,
   TargetID,
-  TargetRepository extends EntityCrudRepository<TargetEntity, TargetID>
-> implements HasManyRepository<TargetEntity> {
+  TargetRepository extends EntityCrudRepository<TargetEntity, TargetID>,
+  ThroughEntity extends Entity,
+  ThroughID,
+  ThroughRepository extends EntityCrudRepository<ThroughEntity, ThroughID>
+> implements HasManyThroughRepository<TargetEntity> {
   /**
    * Constructor of DefaultHasManyEntityCrudRepository
    * @param getTargetRepository the getter of the related target model repository instance
@@ -69,18 +72,30 @@ export class DefaultHasManyRepository<
    */
   constructor(
     public getTargetRepository: Getter<TargetRepository>,
-    public constraint: DataObject<TargetEntity>,
+    public getThroughRepository: Getter<ThroughRepository>,
+    public getConstraint: (
+      targetInstance?: TargetEntity,
+    ) => Promise<DataObject<TargetEntity> | Where<ThroughEntity>>,
   ) {}
 
   async create(
     targetModelData: DataObject<TargetEntity>,
     options?: Options,
+    throughOptions?: Options,
   ): Promise<TargetEntity> {
     const targetRepository = await this.getTargetRepository();
-    return targetRepository.create(
-      constrainDataObject(targetModelData, this.constraint),
+    const targetInstance = await targetRepository.create(
+      targetModelData,
       options,
     );
+    const throughRepository = await this.getThroughRepository();
+    await throughRepository.create(
+      constrainDataObject({}, (await this.getConstraint(
+        targetInstance,
+      )) as DataObject<ThroughEntity>),
+      throughOptions,
+    );
+    return targetInstance;
   }
 
   async find(
@@ -89,7 +104,7 @@ export class DefaultHasManyRepository<
   ): Promise<TargetEntity[]> {
     const targetRepository = await this.getTargetRepository();
     return targetRepository.find(
-      constrainFilter(filter, this.constraint),
+      constrainFilter(filter, await this.getConstraint()),
       options,
     );
   }
@@ -97,7 +112,9 @@ export class DefaultHasManyRepository<
   async delete(where?: Where<TargetEntity>, options?: Options): Promise<Count> {
     const targetRepository = await this.getTargetRepository();
     return targetRepository.deleteAll(
-      constrainWhere(where, this.constraint as Where<TargetEntity>),
+      constrainWhere(where, (await this.getConstraint()) as Where<
+        TargetEntity
+      >),
       options,
     );
   }
@@ -109,8 +126,10 @@ export class DefaultHasManyRepository<
   ): Promise<Count> {
     const targetRepository = await this.getTargetRepository();
     return targetRepository.updateAll(
-      constrainDataObject(dataObject, this.constraint),
-      constrainWhere(where, this.constraint as Where<TargetEntity>),
+      constrainDataObject(dataObject, dataObject),
+      constrainWhere(where, (await this.getConstraint()) as Where<
+        TargetEntity
+      >),
       options,
     );
   }
