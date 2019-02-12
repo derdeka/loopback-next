@@ -22,11 +22,13 @@ export interface HasManyThroughRepository<Target extends Entity> {
    * Create a target model instance
    * @param targetModelData The target model data
    * @param options Options for the operation
+   * @param throughOptions Options passed to create through
    * @returns A promise which resolves to the newly created target model instance
    */
   create(
     targetModelData: DataObject<Target>,
     options?: Options,
+    throughOptions?: Options,
   ): Promise<Target>;
   /**
    * Find target model instance(s)
