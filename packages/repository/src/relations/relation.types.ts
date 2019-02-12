@@ -47,16 +47,31 @@ export interface HasManyDefinition extends RelationDefinitionBase {
   type: RelationType.hasMany;
 
   /**
-   * The through model of this relation.
-   *
-   * E.g. when a Customer has many Order instances and a Seller has many Order instances, then Order is through.
-   */
-  through?: TypeResolver<Entity, typeof Entity>;
-
-  /**
-   * The foreign key used by the target or through model to reference the source model.
+   * The foreign key used by the target model.
    *
    * E.g. when a Customer has many Order instances, then keyTo is "customerId".
+   * Note that "customerId" is the default FK assumed by the framework, users
+   * can provide a custom FK name by setting "keyTo".
+   */
+  keyTo?: string;
+}
+
+export interface HasManyThroughDefinition extends RelationDefinitionBase {
+  type: RelationType.hasMany;
+
+  /**
+   * The through model of this relation.
+   *
+   * E.g. when a Customer has many Order instances and a Seller has many Order instances,
+   * then Order is through.
+   */
+  through: TypeResolver<Entity, typeof Entity>;
+
+  /**
+   * The foreign key used by the through model to reference the source model.
+   *
+   * E.g. when a Customer has many Order instances and a Seller has many Order instances,
+   * then keyTo is "customerId".
    * Note that "customerId" is the default FK assumed by the framework, users
    * can provide a custom FK name by setting "keyTo".
    */
@@ -64,6 +79,9 @@ export interface HasManyDefinition extends RelationDefinitionBase {
 
   /**
    * The foreign key used by the through model to reference the target model.
+   *
+   * E.g. when a Customer has many Order instances and a Seller has many Order instances,
+   * then targetFkName is "sellerId".
    */
   targetFkName?: string;
 
@@ -106,6 +124,7 @@ export interface HasOneDefinition extends RelationDefinitionBase {
 export type RelationMetadata =
   | BelongsToDefinition
   | HasManyDefinition
+  | HasManyThroughDefinition
   | HasOneDefinition
   // TODO(bajtos) add other relation types and remove RelationDefinitionBase once
   // all relation types are covered.

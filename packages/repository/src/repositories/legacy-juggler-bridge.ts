@@ -23,10 +23,13 @@ import {
   BelongsToDefinition,
   HasManyDefinition,
   HasManyRepositoryFactory,
+  HasManyThroughDefinition,
+  HasManyThroughRepositoryFactory,
   HasOneDefinition,
   HasOneRepositoryFactory,
   createBelongsToAccessor,
   createHasManyRepositoryFactory,
+  createHasManyThroughRepositoryFactory,
   createHasOneRepositoryFactory,
 } from '../relations';
 import {isTypeResolver, resolveType} from '../type-resolver';
@@ -188,13 +191,12 @@ export class DefaultCrudRepository<T extends Entity, ID>
   >(
     relationName: string,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-    throughRepositoryGetter?: Getter<EntityCrudRepository<Entity, TargetID>>,
   ): HasManyRepositoryFactory<Target, ForeignKeyType> {
     return this.createHasManyRepositoryFactoryFor<
       Target,
       TargetID,
       ForeignKeyType
-    >(relationName, targetRepoGetter, throughRepositoryGetter);
+    >(relationName, targetRepoGetter);
   }
 
   /**
@@ -230,11 +232,91 @@ export class DefaultCrudRepository<T extends Entity, ID>
   >(
     relationName: string,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
-    throughRepositoryGetter?: Getter<EntityCrudRepository<Entity, TargetID>>,
   ): HasManyRepositoryFactory<Target, ForeignKeyType> {
     const meta = this.entityClass.definition.relations[relationName];
     return createHasManyRepositoryFactory<Target, TargetID, ForeignKeyType>(
       meta as HasManyDefinition,
+      targetRepoGetter,
+    );
+  }
+
+  /**
+   * @deprecated
+   * Function to create a constrained relation repository factory
+   *
+   * Use `this.createHasManyThroughRepositoryFactoryFor()` instaed
+   *
+   * @param relationName Name of the relation defined on the source model
+   * @param targetRepo Target repository instance
+   * @param throughRepo Through repository instance
+   */
+  protected _createHasManyThroughRepositoryFactoryFor<
+    Target extends Entity,
+    TargetID,
+    Through extends Entity,
+    ThroughID,
+    ForeignKeyType
+  >(
+    relationName: string,
+    targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
+    throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
+  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
+    return this.createHasManyThroughRepositoryFactoryFor<
+      Target,
+      TargetID,
+      Through,
+      ThroughID,
+      ForeignKeyType
+    >(relationName, targetRepoGetter, throughRepositoryGetter);
+  }
+
+  /**
+   * Function to create a constrained relation repository factory
+   *
+   * ```ts
+   * class CustomerRepository extends DefaultCrudRepository<
+   *   Customer,
+   *   typeof Customer.prototype.id
+   * > {
+   *   public readonly orders: HasManyRepositoryFactory<Order, typeof Customer.prototype.id>;
+   *
+   *   constructor(
+   *     protected db: juggler.DataSource,
+   *     orderRepository: EntityCrudRepository<Order, typeof Order.prototype.id>,
+   *   ) {
+   *     super(Customer, db);
+   *     this.orders = this._createHasManyRepositoryFactoryFor(
+   *       'orders',
+   *       orderRepository,
+   *     );
+   *   }
+   * }
+   * ```
+   *
+   * @param relationName Name of the relation defined on the source model
+   * @param targetRepo Target repository instance
+   * @param throughRepo Through repository instance
+   */
+  protected createHasManyThroughRepositoryFactoryFor<
+    Target extends Entity,
+    TargetID,
+    Through extends Entity,
+    ThroughID,
+    ForeignKeyType
+  >(
+    relationName: string,
+    targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
+    throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
+  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
+    const meta = this.entityClass.definition.relations[relationName];
+    return createHasManyThroughRepositoryFactory<
+      Target,
+      TargetID,
+      Through,
+      ThroughID,
+      ForeignKeyType
+    >(
+      meta as HasManyThroughDefinition,
       targetRepoGetter,
       throughRepositoryGetter,
     );
