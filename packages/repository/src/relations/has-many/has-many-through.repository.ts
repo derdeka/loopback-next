@@ -13,6 +13,7 @@ import {
   constrainWhere,
 } from '../../repositories/constraint-utils';
 import {EntityCrudRepository} from '../../repositories/repository';
+import {AdvancedConstraint} from './has-many-through-repository.factory';
 
 /**
  * CRUD operations for a target repository of a HasMany relation
@@ -80,9 +81,9 @@ export class DefaultHasManyThroughRepository<
   constructor(
     public getTargetRepository: Getter<TargetRepository>,
     public getThroughRepository: Getter<ThroughRepository>,
-    public getConstraint: (
+    public getAdvancedConstraint: (
       targetInstance?: TargetEntity,
-    ) => Promise<DataObject<TargetEntity> | Where<ThroughEntity>>,
+    ) => Promise<AdvancedConstraint<TargetEntity | ThroughEntity>>,
   ) {}
 
   async create(
@@ -96,11 +97,13 @@ export class DefaultHasManyThroughRepository<
       targetModelData,
       options,
     );
+    const advancedConstraint = await this.getAdvancedConstraint(targetInstance);
     const throughRepository = await this.getThroughRepository();
     await throughRepository.create(
-      constrainDataObject(throughModelData, (await this.getConstraint(
-        targetInstance,
-      )) as DataObject<ThroughEntity>),
+      constrainDataObject(
+        throughModelData,
+        advancedConstraint.dataObject as DataObject<ThroughEntity>,
+      ),
       throughOptions,
     );
     return targetInstance;
@@ -110,19 +113,21 @@ export class DefaultHasManyThroughRepository<
     filter?: Filter<TargetEntity>,
     options?: Options,
   ): Promise<TargetEntity[]> {
+    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
     return targetRepository.find(
-      constrainFilter(filter, await this.getConstraint()),
+      constrainFilter(filter, advancedConstraint.filter as Filter<
+        TargetEntity
+      >),
       options,
     );
   }
 
   async delete(where?: Where<TargetEntity>, options?: Options): Promise<Count> {
+    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
     return targetRepository.deleteAll(
-      constrainWhere(where, (await this.getConstraint()) as Where<
-        TargetEntity
-      >),
+      constrainWhere(where, advancedConstraint.where as Where<TargetEntity>),
       options,
     );
   }
@@ -132,12 +137,14 @@ export class DefaultHasManyThroughRepository<
     where?: Where<TargetEntity>,
     options?: Options,
   ): Promise<Count> {
+    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
     return targetRepository.updateAll(
-      constrainDataObject(dataObject, dataObject),
-      constrainWhere(where, (await this.getConstraint()) as Where<
-        TargetEntity
-      >),
+      constrainDataObject(
+        dataObject,
+        advancedConstraint.dataObject as DataObject<TargetEntity>,
+      ),
+      constrainWhere(where, advancedConstraint.where as Where<TargetEntity>),
       options,
     );
   }

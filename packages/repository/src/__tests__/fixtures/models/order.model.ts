@@ -5,6 +5,7 @@
 
 import {belongsTo, Entity, model, property} from '../../..';
 import {Customer} from './customer.model';
+import {Seller} from './seller.model';
 
 @model()
 export class Order extends Entity {
@@ -16,9 +17,9 @@ export class Order extends Entity {
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
   })
-  description: string;
+  description?: string;
 
   @property({
     type: 'boolean',
@@ -28,4 +29,7 @@ export class Order extends Entity {
 
   @belongsTo(() => Customer)
   customerId: number;
+
+  @belongsTo(() => Seller)
+  sellerId: number;
 }
