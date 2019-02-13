@@ -17,16 +17,21 @@ import {EntityCrudRepository} from '../../repositories/repository';
 /**
  * CRUD operations for a target repository of a HasMany relation
  */
-export interface HasManyThroughRepository<Target extends Entity> {
+export interface HasManyThroughRepository<
+  Target extends Entity,
+  Through extends Entity
+> {
   /**
    * Create a target model instance
    * @param targetModelData The target model data
+   * @param throughModelData The through model data
    * @param options Options for the operation
    * @param throughOptions Options passed to create through
    * @returns A promise which resolves to the newly created target model instance
    */
   create(
     targetModelData: DataObject<Target>,
+    throughModelData?: DataObject<Through>,
     options?: Options,
     throughOptions?: Options,
   ): Promise<Target>;
@@ -65,7 +70,7 @@ export class DefaultHasManyThroughRepository<
   ThroughEntity extends Entity,
   ThroughID,
   ThroughRepository extends EntityCrudRepository<ThroughEntity, ThroughID>
-> implements HasManyThroughRepository<TargetEntity> {
+> implements HasManyThroughRepository<TargetEntity, ThroughEntity> {
   /**
    * Constructor of DefaultHasManyEntityCrudRepository
    * @param getTargetRepository the getter of the related target model repository instance
@@ -82,6 +87,7 @@ export class DefaultHasManyThroughRepository<
 
   async create(
     targetModelData: DataObject<TargetEntity>,
+    throughModelData: DataObject<ThroughEntity> = {},
     options?: Options,
     throughOptions?: Options,
   ): Promise<TargetEntity> {
@@ -92,7 +98,7 @@ export class DefaultHasManyThroughRepository<
     );
     const throughRepository = await this.getThroughRepository();
     await throughRepository.create(
-      constrainDataObject({}, (await this.getConstraint(
+      constrainDataObject(throughModelData, (await this.getConstraint(
         targetInstance,
       )) as DataObject<ThroughEntity>),
       throughOptions,

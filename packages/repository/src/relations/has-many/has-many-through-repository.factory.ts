@@ -22,8 +22,9 @@ const debug = debugFactory('loopback:repository:has-many-repository-factory');
 
 export type HasManyThroughRepositoryFactory<
   Target extends Entity,
+  Through extends Entity,
   ForeignKeyType
-> = (fkValue: ForeignKeyType) => HasManyThroughRepository<Target>;
+> = (fkValue: ForeignKeyType) => HasManyThroughRepository<Target, Through>;
 
 /**
  * Enforces a constraint on a repository based on a relationship contract
@@ -48,7 +49,7 @@ export function createHasManyThroughRepositoryFactory<
   relationMetadata: HasManyThroughDefinition,
   targetRepositoryGetter: Getter<EntityCrudRepository<Target, TargetID>>,
   throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
-): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
+): HasManyThroughRepositoryFactory<Target, Through, ForeignKeyType> {
   const meta = resolveHasManyThroughMetadata(relationMetadata);
   debug('Resolved HasMany relation metadata: %o', meta);
   return function(fkValue?: ForeignKeyType) {
