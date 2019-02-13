@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2019. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -7,14 +7,16 @@ import {Getter, inject} from '@loopback/context';
 import {
   DefaultCrudRepository,
   HasManyRepositoryFactory,
+  HasManyThroughRepositoryFactory,
   juggler,
   repository,
   BelongsToAccessor,
 } from '../../..';
-import {Customer, Order, Address} from '../models';
+import {Customer, Order, Address, Seller} from '../models';
 import {OrderRepository} from './order.repository';
 import {HasOneRepositoryFactory} from '../../../';
 import {AddressRepository} from './address.repository';
+import {SellerRepository} from './seller.repository';
 
 export class CustomerRepository extends DefaultCrudRepository<
   Customer,
@@ -36,6 +38,11 @@ export class CustomerRepository extends DefaultCrudRepository<
     Customer,
     typeof Customer.prototype.id
   >;
+  public readonly sellers: HasManyThroughRepositoryFactory<
+    Seller,
+    Order,
+    typeof Customer.prototype.id
+  >;
 
   constructor(
     @inject('datasources.db') protected db: juggler.DataSource,
@@ -43,6 +50,8 @@ export class CustomerRepository extends DefaultCrudRepository<
     orderRepositoryGetter: Getter<OrderRepository>,
     @repository.getter('AddressRepository')
     addressRepositoryGetter: Getter<AddressRepository>,
+    @repository.getter('SellerRepository')
+    sellerRepositoryGetter: Getter<SellerRepository>,
   ) {
     super(Customer, db);
     this.orders = this.createHasManyRepositoryFactoryFor(
@@ -60,6 +69,11 @@ export class CustomerRepository extends DefaultCrudRepository<
     this.parent = this.createBelongsToAccessorFor(
       'parent',
       Getter.fromValue(this),
+    );
+    this.sellers = this.createHasManyThroughRepositoryFactoryFor(
+      'sellers',
+      sellerRepositoryGetter,
+      orderRepositoryGetter,
     );
   }
 }
