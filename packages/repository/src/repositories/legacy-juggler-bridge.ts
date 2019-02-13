@@ -235,7 +235,7 @@ export class DefaultCrudRepository<T extends Entity, ID>
     relationName: string,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
     throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
-  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
+  ): HasManyThroughRepositoryFactory<Target, Through, ForeignKeyType> {
     return this.createHasManyThroughRepositoryFactoryFor<
       Target,
       TargetID,
@@ -282,7 +282,7 @@ export class DefaultCrudRepository<T extends Entity, ID>
     relationName: string,
     targetRepoGetter: Getter<EntityCrudRepository<Target, TargetID>>,
     throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
-  ): HasManyThroughRepositoryFactory<Target, ForeignKeyType> {
+  ): HasManyThroughRepositoryFactory<Target, Through, ForeignKeyType> {
     const meta = this.entityClass.definition.relations[relationName];
     return createHasManyThroughRepositoryFactory<
       Target,
