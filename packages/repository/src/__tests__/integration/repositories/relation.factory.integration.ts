@@ -26,7 +26,7 @@ import {
 import {
   createHasManyThroughRepositoryFactory,
   HasManyThroughRepository,
-} from '../../../relations';
+} from '../../..';
 
 // Given a Customer and Order models - see definitions at the bottom
 let db: juggler.DataSource;
