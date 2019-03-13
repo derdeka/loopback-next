@@ -7,13 +7,15 @@ import {Getter, inject} from '@loopback/context';
 import {
   DefaultCrudRepository,
   HasManyRepositoryFactory,
+  HasManyThroughRepositoryFactory,
   juggler,
   repository,
 } from '../../..';
-import {Customer, Order, Address} from '../models';
+import {Customer, Order, Address, Seller} from '../models';
 import {OrderRepository} from './order.repository';
 import {HasOneRepositoryFactory} from '../../../';
 import {AddressRepository} from './address.repository';
+import {SellerRepository} from './seller.repository';
 
 export class CustomerRepository extends DefaultCrudRepository<
   Customer,
@@ -27,12 +29,20 @@ export class CustomerRepository extends DefaultCrudRepository<
     Address,
     typeof Customer.prototype.id
   >;
+  public readonly sellers: HasManyThroughRepositoryFactory<
+    Seller,
+    Order,
+    typeof Customer.prototype.id
+  >;
+
   constructor(
     @inject('datasources.db') protected db: juggler.DataSource,
     @repository.getter('OrderRepository')
     orderRepositoryGetter: Getter<OrderRepository>,
     @repository.getter('AddressRepository')
     addressRepositoryGetter: Getter<AddressRepository>,
+    @repository.getter('SellerRepository')
+    sellerRepositoryGetter: Getter<SellerRepository>,
   ) {
     super(Customer, db);
     this.orders = this.createHasManyRepositoryFactoryFor(
@@ -42,6 +52,11 @@ export class CustomerRepository extends DefaultCrudRepository<
     this.address = this.createHasOneRepositoryFactoryFor(
       'address',
       addressRepositoryGetter,
+    );
+    this.sellers = this.createHasManyThroughRepositoryFactoryFor(
+      'sellers',
+      sellerRepositoryGetter,
+      orderRepositoryGetter,
     );
   }
 }
