@@ -100,6 +100,7 @@ async function createAdvancedConstraint<
   // tslint:disable-next-line:no-any
   const sourceFkName = meta.keyTo;
   const targetFkName = meta.keyThrough;
+  const {targetPrimaryKey} = meta;
   const advancedConstraint: any = {
     dataObject: {[sourceFkName]: fkValue} as DataObject<Through>,
     filter: {},
@@ -124,7 +125,9 @@ async function createAdvancedConstraint<
     advancedConstraint.dataObject = {};
     advancedConstraint.where = {
       or: throughInstances.map((throughInstance: Through) => {
-        return {id: throughInstance[targetFkName as keyof Through]};
+        return {
+          [targetPrimaryKey]: throughInstance[targetFkName as keyof Through],
+        };
       }),
     };
   }
