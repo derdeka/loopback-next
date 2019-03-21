@@ -81,9 +81,9 @@ export interface HasManyThroughDefinition extends RelationDefinitionBase {
    * The foreign key used by the through model to reference the target model.
    *
    * E.g. when a Customer has many Order instances and a Seller has many Order instances,
-   * then targetFkName is "sellerId".
+   * then keyThrough is "sellerId".
    */
-  targetFkName?: string;
+  keyThrough?: string;
 
   /*
    * The primary key in the target model when using through, e.g. Seller#id.

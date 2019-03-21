@@ -82,7 +82,7 @@ export function createHasManyThroughRepositoryFactory<
 
 type HasManyThroughResolvedDefinition = HasManyThroughDefinition & {
   keyTo: string;
-  targetFkName: string;
+  keyThrough: string;
   targetPrimaryKey: string;
 };
 
@@ -98,14 +98,16 @@ async function createAdvancedConstraint<
   fkValue?: ForeignKeyType,
 ): Promise<AdvancedConstraint<Target | Through>> {
   // tslint:disable-next-line:no-any
+  const sourceFkName = meta.keyTo;
+  const targetFkName = meta.keyThrough;
   const advancedConstraint: any = {
-    dataObject: {[meta.keyTo]: fkValue} as DataObject<Through>,
+    dataObject: {[sourceFkName]: fkValue} as DataObject<Through>,
     filter: {},
     where: {},
   };
   if (targetInstance) {
     // through constraint
-    advancedConstraint.dataObject[meta.targetFkName] =
+    advancedConstraint.dataObject[targetFkName] =
       targetInstance[meta.targetPrimaryKey as keyof Target];
     advancedConstraint.where = {where: advancedConstraint.dataObject};
   } else {
@@ -122,7 +124,7 @@ async function createAdvancedConstraint<
     advancedConstraint.dataObject = {};
     advancedConstraint.where = {
       or: throughInstances.map((throughInstance: Through) => {
-        return {id: throughInstance[meta.targetFkName as keyof Through]};
+        return {id: throughInstance[targetFkName as keyof Through]};
       }),
     };
   }
@@ -152,7 +154,7 @@ function resolveHasManyThroughMetadata(
 
   if (
     relationMeta.keyTo ||
-    relationMeta.targetFkName ||
+    relationMeta.keyThrough ||
     relationMeta.targetPrimaryKey
   ) {
     // The explict cast is needed because of a limitation of type inference
@@ -179,19 +181,21 @@ function resolveHasManyThroughMetadata(
     throughModel,
   );
 
-  const defaultFkName = camelCase(sourceModel.modelName + '_id');
-  const hasDefaultFkProperty =
+  const sourceFkName =
+    relationMeta.keyTo || camelCase(sourceModel.modelName + '_id');
+  const hasSourceFkProperty =
     throughModel.definition &&
     throughModel.definition.properties &&
-    throughModel.definition.properties[defaultFkName];
-  if (!hasDefaultFkProperty) {
+    throughModel.definition.properties[sourceFkName];
+  if (!hasSourceFkProperty) {
     const reason = `through model ${
       targetModel.name
-    } is missing definition of default foreign key ${defaultFkName}`;
+    } is missing definition of default foreign key ${sourceFkName}`;
     throw new InvalidRelationError(reason, relationMeta);
   }
 
-  const targetFkName = camelCase(targetModel.modelName + '_id');
+  const targetFkName =
+    relationMeta.keyThrough || camelCase(targetModel.modelName + '_id');
   const hasTargetFkName =
     throughModel.definition &&
     throughModel.definition.properties &&
@@ -212,8 +216,8 @@ function resolveHasManyThroughMetadata(
   }
 
   return Object.assign(relationMeta, {
-    keyTo: defaultFkName,
-    targetFkName,
+    keyTo: sourceFkName,
+    keyThrough: targetFkName,
     targetPrimaryKey,
   });
 }
