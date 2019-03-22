@@ -36,7 +36,7 @@ for all the API usages in each package.
 | Version    | Status          | Published | EOL                  |
 | ---------- | --------------- | --------- | -------------------- |
 | LoopBack 4 | Current         | Oct 2018  | Apr 2021 _(minimum)_ |
-| Loopback 3 | Active LTS      | Dec 2016  | Dec 2019             |
+| Loopback 3 | Active LTS      | Dec 2016  | Dec 2020             |
 | Loopback 2 | Maintenance LTS | Jul 2014  | Apr 2019             |
 
 Please refer to our
@@ -64,7 +64,8 @@ To create your first LoopBack 4 application, see
 - [API documentation](http://apidocs.loopback.io/#LoopBack4)
 - [FAQ](http://loopback.io/doc/en/lb4/FAQ.html)
 - [LoopBack 3 vs LoopBack 4](http://loopback.io/doc/en/lb4/LoopBack-3.x.html)
-- [Tutorials and examples](http://loopback.io/doc/en/lb4/Examples-and-tutorials.html)
+- [Tutorials](http://loopback.io/doc/en/lb4/Tutorials.html)
+- [Examples](http://loopback.io/doc/en/lb4/Examples.html)
 
 ## Contributing
 

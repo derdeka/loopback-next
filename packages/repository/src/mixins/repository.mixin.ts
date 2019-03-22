@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -71,7 +71,8 @@ export function RepositoryMixin<T extends Class<any>>(superClass: T) {
         name,
         namespace: 'repositories',
         type: 'repository',
-      }).inScope(BindingScope.SINGLETON);
+        defaultScope: BindingScope.TRANSIENT,
+      });
       this.add(binding);
       return binding;
     }
@@ -122,7 +123,8 @@ export function RepositoryMixin<T extends Class<any>>(superClass: T) {
           name: name || dataSource.dataSourceName,
           namespace: 'datasources',
           type: 'datasource',
-        }).inScope(BindingScope.SINGLETON);
+          defaultScope: BindingScope.SINGLETON,
+        });
         this.add(binding);
         return binding;
       } else {

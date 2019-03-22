@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -188,6 +188,7 @@ describe('RestServer.getApiSpec()', () => {
           responses: {'200': {description: ''}},
           'x-controller-name': 'MyController',
           'x-operation-name': 'greet',
+          operationId: 'MyController.greet',
           tags: ['MyTag'],
         },
       },
@@ -248,6 +249,7 @@ describe('RestServer.getApiSpec()', () => {
           },
           'x-controller-name': 'MyController',
           'x-operation-name': 'greet',
+          operationId: 'MyController.greet',
           tags: ['MyController'],
         },
       },

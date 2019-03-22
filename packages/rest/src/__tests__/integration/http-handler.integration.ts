@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -30,7 +30,7 @@ import {
   UrlEncodedBodyParser,
   writeResultToResponse,
 } from '../..';
-import {createUnexpectedHttpErrorLogger} from '../helpers';
+import {createUnexpectedHttpErrorLogger, aRestServerConfig} from '../helpers';
 
 const SequenceActions = RestBindings.SequenceActions;
 
@@ -652,7 +652,7 @@ describe('HttpHandler', () => {
       .bind(RestBindings.REQUEST_BODY_PARSER)
       .toClass(RequestBodyParser);
 
-    handler = new HttpHandler(rootContext);
+    handler = new HttpHandler(rootContext, aRestServerConfig());
     rootContext.bind(RestBindings.HANDLER).to(handler);
   }
 

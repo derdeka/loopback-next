@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -11,6 +11,7 @@ import {
   httpsGetAsync,
   itSkippedOnTravis,
   supertest,
+  createRestAppClient,
 } from '@loopback/testlab';
 import * as fs from 'fs';
 import {IncomingMessage, ServerResponse} from 'http';
@@ -29,6 +30,7 @@ import {
   RestComponent,
   RestServer,
   RestServerConfig,
+  RestApplication,
 } from '../..';
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -432,6 +434,22 @@ paths:
     expect(response.get('Access-Control-Allow-Credentials')).to.equal('true');
   });
 
+  it('disables endpoints with openApiSpec.disabled = true', async () => {
+    const server = await givenAServer({
+      rest: {
+        port: 0,
+        openApiSpec: {
+          disabled: true,
+        },
+      },
+    });
+
+    const test = createClientForHandler(server.requestHandler);
+    await test.get('/openapi.json').expect(404);
+    await test.get('/openapi.yaml').expect(404);
+    await test.get('/explorer').expect(404);
+  });
+
   it('exposes "GET /explorer" endpoint', async () => {
     const app = new Application();
     app.component(RestComponent);
@@ -529,6 +547,21 @@ paths:
         '\\?url=https://example.com/openapi.json',
       ].join(''),
     );
+    expect(response.get('Location')).match(expectedUrl);
+  });
+
+  it('handles requests with missing Host header', async () => {
+    const app = new RestApplication({
+      rest: {port: 0, host: '127.0.0.1'},
+    });
+    await app.start();
+    const port = await app.restServer.get(RestBindings.PORT);
+
+    const response = await createRestAppClient(app)
+      .get('/explorer')
+      .set('host', '');
+    await app.stop();
+    const expectedUrl = new RegExp(`\\?url=http://127.0.0.1:${port}`);
     expect(response.get('Location')).match(expectedUrl);
   });
 
@@ -667,6 +700,8 @@ paths:
     const options = {
       port: 0,
       protocol: 'https',
+      key: undefined,
+      cert: undefined,
     };
     const serverOptions = givenHttpServerConfig(options);
     const server = await givenAServer({rest: serverOptions});
@@ -685,6 +720,30 @@ paths:
     const res = await httpsGetAsync(serverUrl);
     expect(res.statusCode).to.equal(200);
     await server.stop();
+  });
+
+  it('creates a redirect route with the default status code', async () => {
+    const server = await givenAServer();
+    server.controller(DummyController);
+    server.redirect('/page/html', '/html');
+    const response = await createClientForHandler(server.requestHandler)
+      .get('/page/html')
+      .expect(303);
+    await createClientForHandler(server.requestHandler)
+      .get(response.header.location)
+      .expect(200, 'Hi');
+  });
+
+  it('creates a redirect route with a custom status code', async () => {
+    const server = await givenAServer();
+    server.controller(DummyController);
+    server.redirect('/page/html', '/html', 304);
+    const response = await createClientForHandler(server.requestHandler)
+      .get('/page/html')
+      .expect(304);
+    await createClientForHandler(server.requestHandler)
+      .get(response.header.location)
+      .expect(200, 'Hi');
   });
 
   describe('basePath', () => {
@@ -735,6 +794,17 @@ paths:
       );
       expect(response.body.servers).to.containEql({url: '/api'});
     });
+
+    it('controls redirect locations', async () => {
+      server.controller(DummyController);
+      server.redirect('/page/html', '/html');
+      const response = await createClientForHandler(server.requestHandler)
+        .get('/api/page/html')
+        .expect(303);
+      await createClientForHandler(server.requestHandler)
+        .get(response.header.location)
+        .expect(200, 'Hi');
+    });
   });
 
   async function givenAServer(
@@ -762,6 +832,12 @@ paths:
     })
     ping(): string {
       return 'Hi';
+    }
+    @get('/endpoint', {
+      responses: {},
+    })
+    hello(): string {
+      return 'hello';
     }
   }
 

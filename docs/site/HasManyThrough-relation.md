@@ -99,7 +99,7 @@ The decorated property name is used as the relation name and stored as part of
 the source model definition's relation metadata. The property type metadata is
 also preserved as an array of type `Seller` as part of the decoration.
 
-## Configuring a hasMany relation
+## Configuring a hasManyThrough relation
 
 The configuration and resolution of a `hasManyThrough` relation takes place at the
 repository level. Once the `hasManyThrough` relation is defined on the source model,

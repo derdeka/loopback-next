@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017. All Rights Reserved.
+// Copyright IBM Corp. 2017,2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -31,7 +31,7 @@ import {
 import {HttpProtocol} from '@loopback/http-server';
 import * as https from 'https';
 import {ErrorWriterOptions} from 'strong-error-handler';
-import {RestRouter} from './router';
+import {RestRouter, RestRouterOptions} from './router';
 import {RequestBodyParser, BodyParser} from './body-parsers';
 
 /**
@@ -79,6 +79,10 @@ export namespace RestBindings {
    * Internal binding key for rest router
    */
   export const ROUTER = BindingKey.create<RestRouter>('rest.router');
+
+  export const ROUTER_OPTIONS = BindingKey.create<RestRouterOptions>(
+    'rest.router.options',
+  );
 
   /**
    * Binding key for setting and injecting Reject action's error handling

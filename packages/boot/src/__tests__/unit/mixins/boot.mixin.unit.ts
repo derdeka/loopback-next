@@ -1,11 +1,11 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/boot
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
 import {expect} from '@loopback/testlab';
 import {BootMixin, Booter, BootBindings} from '../../..';
-import {Application} from '@loopback/core';
+import {Application, bind} from '@loopback/core';
 
 describe('BootMxiin unit tests', () => {
   let app: AppWithBootMixin;
@@ -26,6 +26,21 @@ describe('BootMxiin unit tests', () => {
     app.booters(TestBooter);
     const booter = await app.get(`${BootBindings.BOOTER_PREFIX}.TestBooter`);
     expect(booter).to.be.an.instanceOf(TestBooter);
+  });
+
+  it('binds booter with `@bind` from app.booters()', async () => {
+    app.booters(TestBooterWithBind);
+    const booterBinding = app.getBinding(
+      `${BootBindings.BOOTER_PREFIX}.TestBooterWithBind`,
+    );
+    expect(booterBinding.tagMap).to.containEql({artifactType: 'xsd'});
+  });
+
+  it('binds booter from app.booters() as singletons by default', async () => {
+    app.booters(TestBooter);
+    const booter1 = await app.get(`${BootBindings.BOOTER_PREFIX}.TestBooter`);
+    const booter2 = await app.get(`${BootBindings.BOOTER_PREFIX}.TestBooter`);
+    expect(booter1).to.be.exactly(booter2);
   });
 
   it('binds multiple booter classes from app.booters()', async () => {
@@ -62,6 +77,15 @@ describe('BootMxiin unit tests', () => {
   });
 
   class TestBooter implements Booter {
+    configured = false;
+
+    async configure() {
+      this.configured = true;
+    }
+  }
+
+  @bind({tags: {artifactType: 'xsd'}})
+  class TestBooterWithBind implements Booter {
     configured = false;
 
     async configure() {

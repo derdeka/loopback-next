@@ -1,11 +1,11 @@
 {
   "name": "@loopback/tslint-config",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "",
   "engines": {
     "node": ">=8.9"
   },
-  "author": "IBM",
+  "author": "IBM Corp.",
   "copyright.owner": "IBM Corp.",
   "license": "MIT",
   "dependencies": {

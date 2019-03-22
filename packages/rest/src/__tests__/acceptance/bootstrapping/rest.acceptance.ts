@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -24,11 +24,12 @@ describe('Bootstrapping with RestComponent', () => {
       // At this moment, the Sequence is not ready to be resolved
       // as RestBindings.Http.CONTEXT is not bound
       const binding = server.getBinding(RestBindings.SEQUENCE);
-      expect(binding.valueConstructor.name).to.equal('UserDefinedSequence');
+      expect(binding.valueConstructor).to.equal(UserDefinedSequence);
     });
 
+    class UserDefinedSequence extends DefaultSequence {}
+
     async function givenAppWithUserDefinedSequence() {
-      class UserDefinedSequence extends DefaultSequence {}
       app = new Application({
         rest: {
           sequence: UserDefinedSequence,

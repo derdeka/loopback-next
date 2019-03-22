@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2017,2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -19,6 +19,7 @@ import {Request, Response} from './types';
 
 import {RestBindings} from './keys';
 import {RequestContext} from './request-context';
+import {RestServerResolvedConfig} from './rest.server';
 
 export class HttpHandler {
   protected _apiDefinitions: SchemasObject;
@@ -26,8 +27,9 @@ export class HttpHandler {
   public handleRequest: (request: Request, response: Response) => Promise<void>;
 
   constructor(
-    protected _rootContext: Context,
-    protected _routes = new RoutingTable(),
+    protected readonly _rootContext: Context,
+    protected readonly _serverConfig: RestServerResolvedConfig,
+    protected readonly _routes = new RoutingTable(),
   ) {
     this.handleRequest = (req, res) => this._handleRequest(req, res);
   }
@@ -70,6 +72,7 @@ export class HttpHandler {
       request,
       response,
       this._rootContext,
+      this._serverConfig,
     );
 
     const sequence = await requestContext.get<SequenceHandler>(

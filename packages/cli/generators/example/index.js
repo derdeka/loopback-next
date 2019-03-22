@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/cli
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -20,6 +20,8 @@ const EXAMPLES = {
   'log-extension': 'An example extension project for LoopBack 4.',
   'rpc-server': 'A basic RPC server using a made-up protocol.',
   'soap-calculator': 'An example on how to integrate SOAP web services',
+  'express-composition':
+    'A simple Express application that uses LoopBack 4 REST API.',
 };
 Object.freeze(EXAMPLES);
 

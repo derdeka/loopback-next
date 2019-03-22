@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -28,7 +28,7 @@ export class OrderRepository extends DefaultCrudRepository<
     customerRepositoryGetter: Getter<CustomerRepository>,
   ) {
     super(Order, db);
-    this.customer = this._createBelongsToAccessorFor(
+    this.customer = this.createBelongsToAccessorFor(
       'customer',
       customerRepositoryGetter,
     );

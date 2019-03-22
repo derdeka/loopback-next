@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.2](https://github.com/strongloop/loopback-next/compare/@loopback/cli@1.8.1...@loopback/cli@1.8.2) (2019-03-12)
+
+
+### Bug Fixes
+
+* **cli:** setup controller generator after adding properties ([b0ee417](https://github.com/strongloop/loopback-next/commit/b0ee417))
+* **cli:** simplify HTTP server setup in acceptance tests ([aa0e2f7](https://github.com/strongloop/loopback-next/commit/aa0e2f7))
+* **cli:** use pascalCase for toClassName to handle '-' ([861256c](https://github.com/strongloop/loopback-next/commit/861256c))
+
+
+### Performance Improvements
+
+* update dockerfile to better version ([5494243](https://github.com/strongloop/loopback-next/commit/5494243))
+
+
+
+
+
+## [1.8.1](https://github.com/strongloop/loopback-next/compare/@loopback/cli@1.8.0...@loopback/cli@1.8.1) (2019-03-01)
+
+**Note:** Version bump only for package @loopback/cli
+
+
+
+
+
+# [1.8.0](https://github.com/strongloop/loopback-next/compare/@loopback/cli@1.7.0...@loopback/cli@1.8.0) (2019-03-01)
+
+
+### Bug Fixes
+
+* **cli:** fix prompt for base repository class ([b429729](https://github.com/strongloop/loopback-next/commit/b429729)), closes [#2429](https://github.com/strongloop/loopback-next/issues/2429)
+
+
+### Features
+
+* add express example ([dd2400e](https://github.com/strongloop/loopback-next/commit/dd2400e))
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/cli@1.6.0...@loopback/cli@1.7.0) (2019-02-25)
+
+
+### Bug Fixes
+
+* **cli:** do not install deps for built-in connectors ([2e035a5](https://github.com/strongloop/loopback-next/commit/2e035a5))
+* update version of nyc ([f8db27c](https://github.com/strongloop/loopback-next/commit/f8db27c))
+* **cli:** force test host to be HOST env var or ipv4 interface ([1664d4f](https://github.com/strongloop/loopback-next/commit/1664d4f))
+* **cli:** generate property.array for array of simple types ([ec80d9a](https://github.com/strongloop/loopback-next/commit/ec80d9a))
+
+
+### Features
+
+* **cli:** add `--docker` option to generate docker files ([4cd2442](https://github.com/strongloop/loopback-next/commit/4cd2442))
+
+
+
+
+
 # [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/cli@1.5.2...@loopback/cli@1.6.0) (2019-02-08)
 
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017. All Rights Reserved.
+// Copyright IBM Corp. 2017,2019. All Rights Reserved.
 // Node module: @loopback/cli
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -11,6 +11,10 @@ module.exports = class AppGenerator extends ProjectGenerator {
   // Note: arguments and options should be defined in the constructor.
   constructor(args, opts) {
     super(args, opts);
+    this.buildOptions.push({
+      name: 'docker',
+      description: 'include Dockerfile and .dockerignore',
+    });
     this.buildOptions.push({
       name: 'repositories',
       description: 'include repository imports and RepositoryMixin',
@@ -27,6 +31,11 @@ module.exports = class AppGenerator extends ProjectGenerator {
     this.option('applicationName', {
       type: String,
       description: 'Application class name',
+    });
+
+    this.option('docker', {
+      type: Boolean,
+      description: 'Include Dockerfile and .dockerignore',
     });
 
     this.option('repositories', {
@@ -112,7 +121,15 @@ module.exports = class AppGenerator extends ProjectGenerator {
   }
 
   scaffold() {
-    return super.scaffold();
+    const result = super.scaffold();
+    if (this.shouldExit()) return result;
+
+    const {docker} = this.projectInfo || {};
+    if (docker) return result;
+
+    this.fs.delete(this.destinationPath('Dockerfile'));
+    this.fs.delete(this.destinationPath('.dockerignore'));
+    return result;
   }
 
   install() {

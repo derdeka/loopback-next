@@ -1,9 +1,10 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/context
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
 import {expect} from '@loopback/testlab';
+import pEvent from 'p-event';
 import {promisify} from 'util';
 import {
   Binding,
@@ -13,7 +14,6 @@ import {
   filterByTag,
 } from '../..';
 
-const pEvent = require('p-event');
 const setImmediateAsync = promisify(setImmediate);
 
 /**

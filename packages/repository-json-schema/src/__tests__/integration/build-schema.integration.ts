@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/repository-json-schema
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -184,6 +184,25 @@ describe('build-schema', () => {
         class TestModel {
           @property.array(Number)
           numArr: number[];
+        }
+
+        const jsonSchema = modelToJsonSchema(TestModel);
+        expect(jsonSchema.properties).to.deepEqual({
+          numArr: {
+            type: 'array',
+            items: {
+              type: 'number',
+            },
+          },
+        });
+        expectValidJsonSchema(jsonSchema);
+      });
+
+      it('properly converts optional primitive array properties', () => {
+        @model()
+        class TestModel {
+          @property.array('number')
+          numArr?: number[];
         }
 
         const jsonSchema = modelToJsonSchema(TestModel);

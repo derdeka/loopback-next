@@ -1,14 +1,9 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/service-proxy
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {
-  Provider,
-  createBindingFromClass,
-  BindingScope,
-  Binding,
-} from '@loopback/context';
+import {Binding, createBindingFromClass, Provider} from '@loopback/context';
 import {Application} from '@loopback/core';
 
 /**
@@ -75,7 +70,7 @@ export function ServiceMixin<T extends Class<any>>(superClass: T) {
         name: serviceName,
         namespace: 'services',
         type: 'service',
-      }).inScope(BindingScope.SINGLETON);
+      });
       this.add(binding);
       return binding;
     }

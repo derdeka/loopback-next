@@ -10,6 +10,7 @@ import {
   HasManyThroughRepositoryFactory,
   juggler,
   repository,
+  BelongsToAccessor,
 } from '../../..';
 import {Customer, Order, Address, Seller} from '../models';
 import {OrderRepository} from './order.repository';
@@ -29,6 +30,14 @@ export class CustomerRepository extends DefaultCrudRepository<
     Address,
     typeof Customer.prototype.id
   >;
+  public readonly customers: HasManyRepositoryFactory<
+    Customer,
+    typeof Customer.prototype.id
+  >;
+  public readonly parent: BelongsToAccessor<
+    Customer,
+    typeof Customer.prototype.id
+  >;
   public readonly sellers: HasManyThroughRepositoryFactory<
     Seller,
     Order,
@@ -45,13 +54,21 @@ export class CustomerRepository extends DefaultCrudRepository<
     sellerRepositoryGetter: Getter<SellerRepository>,
   ) {
     super(Customer, db);
-    this.orders = this._createHasManyRepositoryFactoryFor(
+    this.orders = this.createHasManyRepositoryFactoryFor(
       'orders',
       orderRepositoryGetter,
     );
-    this.address = this._createHasOneRepositoryFactoryFor(
+    this.address = this.createHasOneRepositoryFactoryFor(
       'address',
       addressRepositoryGetter,
+    );
+    this.customers = this.createHasManyRepositoryFactoryFor(
+      'customers',
+      Getter.fromValue(this),
+    );
+    this.parent = this.createBelongsToAccessorFor(
+      'parent',
+      Getter.fromValue(this),
     );
     this.sellers = this.createHasManyThroughRepositoryFactoryFor(
       'sellers',

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018, 2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -29,3 +29,20 @@ export interface RestRouter {
    */
   list(): RouteEntry[];
 }
+
+export type RestRouterOptions = {
+  /**
+   * When `true` it uses trailing slash to match. (default: `false`)
+   *
+   * 1. `strict` is true:
+   * - request `/orders` matches route `/orders` but not `/orders/`
+   * - request `/orders/` matches route `/orders/` but not `/orders`
+   *
+   * 2. `strict` is false (default)
+   * - request `/orders` matches route `/orders` first and falls back to `/orders/`
+   * - request `/orders/` matches route `/orders/` first and falls back to `/orders`
+   *
+   * See `strict routing` at http://expressjs.com/en/4x/api.html#app
+   */
+  strict?: boolean;
+};

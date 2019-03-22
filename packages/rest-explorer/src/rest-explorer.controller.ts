@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/rest-explorer
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -33,12 +33,17 @@ export class ExplorerController {
   }
 
   indexRedirect() {
-    this.response.redirect(301, this.request.url + '/');
+    const url = this.request.originalUrl || this.request.url;
+    this.response.redirect(301, url + '/');
   }
 
   index() {
+    let openApiSpecUrl = this.openApiSpecUrl;
+    if (this.request.baseUrl && this.request.baseUrl !== '/') {
+      openApiSpecUrl = this.request.baseUrl + openApiSpecUrl;
+    }
     const data = {
-      openApiSpecUrl: this.openApiSpecUrl,
+      openApiSpecUrl,
     };
 
     const homePage = templateFn(data);

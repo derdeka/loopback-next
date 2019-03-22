@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/cli
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -80,6 +80,14 @@ describe('app-generator specific files', () => {
       'src/__tests__/acceptance/test-helper.ts',
       /export async function setupApplication/,
     );
+    assert.fileContent(
+      'src/__tests__/acceptance/test-helper.ts',
+      'process.env.HOST',
+    );
+    assert.fileContent(
+      'src/__tests__/acceptance/test-helper.ts',
+      '+process.env.PORT',
+    );
   });
 
   it('generates database migration script', () => {
@@ -96,9 +104,33 @@ describe('app-generator specific files', () => {
     assert.fileContent('src/migrate.ts', /export async function migrate/);
   });
 
+  it('generates docker files', () => {
+    assert.fileContent('Dockerfile', /FROM node:10-slim/);
+    assert.fileContent('.dockerignore', /node_modules/);
+
+    assert.fileContent('package.json', /"docker:build": "docker build/);
+    assert.fileContent('package.json', /"docker:run": "docker run/);
+  });
+
   it('creates npm script "migrate-db"', async () => {
     const pkg = JSON.parse(await readFile('package.json'));
     expect(pkg.scripts).to.have.property('migrate', 'node ./dist/migrate');
+  });
+});
+
+describe('app-generator with docker disabled', () => {
+  before(() => {
+    return helpers
+      .run(generator)
+      .withOptions({docker: false})
+      .withPrompts(props);
+  });
+  it('does not generate docker files', () => {
+    assert.noFile('Dockerfile');
+    assert.noFile('.dockerignore');
+
+    assert.noFileContent('package.json', /"docker:build": "docker build/);
+    assert.noFileContent('package.json', /"docker:run": "docker run/);
   });
 });
 

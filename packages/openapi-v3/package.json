@@ -1,16 +1,16 @@
 {
   "name": "@loopback/openapi-v3",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Processes openapi v3 related metadata",
   "engines": {
     "node": ">=8.9"
   },
   "devDependencies": {
-    "@loopback/build": "^1.3.0",
-    "@loopback/openapi-spec-builder": "^1.0.6",
-    "@loopback/repository": "^1.1.5",
-    "@loopback/testlab": "^1.0.6",
-    "@loopback/tslint-config": "^2.0.0",
+    "@loopback/build": "^1.3.2",
+    "@loopback/openapi-spec-builder": "^1.1.0",
+    "@loopback/repository": "^1.1.8",
+    "@loopback/testlab": "^1.1.0",
+    "@loopback/tslint-config": "^2.0.2",
     "@types/debug": "^4.1.0",
     "@types/lodash": "^4.14.106",
     "@types/node": "^10.11.2"
@@ -21,11 +21,11 @@
     "clean": "lb-clean loopback-openapi-v3*.tgz dist package",
     "integration": "lb-mocha \"dist/__tests__/integration/**/*.js\"",
     "pretest": "npm run build",
-    "test": "lb-mocha \"dist/__tests__/unit/**/*.js\" \"dist/__tests__/integration/**/*.js\"",
+    "test": "lb-mocha \"dist/__tests__/**/*.js\"",
     "unit": "lb-mocha \"dist/__tests__/unit/**/*.js\"",
     "verify": "npm pack && tar xf loopback-openapi-v3*.tgz && tree package && npm run clean"
   },
-  "author": "IBM",
+  "author": "IBM Corp.",
   "copyright.owner": "IBM Corp.",
   "license": "MIT",
   "keywords": [
@@ -49,9 +49,9 @@
     "url": "https://github.com/strongloop/loopback-next.git"
   },
   "dependencies": {
-    "@loopback/context": "^1.5.1",
-    "@loopback/openapi-v3-types": "^1.0.6",
-    "@loopback/repository-json-schema": "^1.3.1",
+    "@loopback/context": "^1.7.0",
+    "@loopback/openapi-v3-types": "^1.0.8",
+    "@loopback/repository-json-schema": "^1.3.4",
     "debug": "^4.0.1",
     "lodash": "^4.17.11"
   }

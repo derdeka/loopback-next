@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/context
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -183,6 +183,27 @@ describe('createBindingFromClass()', () => {
 
     const binding = givenBindingFromClass(MyClass);
     expect(binding.key).to.eql('classes.MyClass');
+  });
+
+  it('honors namespace with @bind', () => {
+    @bind({tags: {namespace: 'services'}})
+    class MyService {}
+
+    const ctx = new Context();
+    const binding = givenBindingFromClass(MyService, ctx);
+
+    expect(binding.key).to.eql('services.MyService');
+  });
+
+  it('honors namespace with options', () => {
+    class MyService {}
+
+    const ctx = new Context();
+    const binding = givenBindingFromClass(MyService, ctx, {
+      namespace: 'services',
+    });
+
+    expect(binding.key).to.eql('services.MyService');
   });
 
   function givenBindingFromClass(

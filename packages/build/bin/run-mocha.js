@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018. All Rights Reserved.
 // Node module: @loopback/build
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -23,16 +23,22 @@ function run(argv, options) {
   const mochaOpts = argv.slice(2).map(a => a.replace(/\bDIST\b/g, dist));
 
   const setMochaOpts =
-    !utils.isOptionSet(mochaOpts, '--opts') &&
-    !utils.mochaOptsFileProjectExists();
+    !utils.isOptionSet(
+      mochaOpts,
+      '--config', // mocha 6.x
+      '--opts', // legacy
+      '--package', // mocha 6.x
+      '--no-config', // mocha 6.x
+    ) && !utils.mochaConfiguredForProject();
 
   // Add default options
   // Keep it backward compatible as dryRun
   if (typeof options === 'boolean') options = {dryRun: options};
   options = options || {};
   if (setMochaOpts) {
-    const mochaOptsFile = utils.getConfigFile('mocha.opts');
-    mochaOpts.unshift('--opts', mochaOptsFile);
+    // Use the default `.mocharc.json` from `@loopback/build`
+    const mochaOptsFile = utils.getConfigFile('.mocharc.json');
+    mochaOpts.unshift('--config', mochaOptsFile);
   }
 
   const allowConsoleLogsIx = mochaOpts.indexOf('--allow-console-logs');

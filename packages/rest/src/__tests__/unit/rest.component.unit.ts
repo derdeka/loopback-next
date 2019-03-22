@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -20,6 +20,7 @@ import {
   RestComponentConfig,
   RestServer,
 } from '../..';
+import {aRestServerConfig} from '../helpers';
 
 const SequenceActions = RestBindings.SequenceActions;
 describe('RestComponent', () => {
@@ -34,7 +35,9 @@ describe('RestComponent', () => {
 
         // Stub constructor requirements for some providers.
         app.bind(RestBindings.Http.CONTEXT).to(new Context());
-        app.bind(RestBindings.HANDLER).to(new HttpHandler(app));
+        app
+          .bind(RestBindings.HANDLER)
+          .to(new HttpHandler(app, aRestServerConfig()));
 
         comp = await app.get<Component>('components.RestComponent');
       });

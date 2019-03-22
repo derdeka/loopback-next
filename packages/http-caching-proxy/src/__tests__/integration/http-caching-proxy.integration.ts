@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/http-caching-proxy
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -7,7 +7,7 @@ import {expect} from '@loopback/testlab';
 import delay from 'delay';
 import * as http from 'http';
 import {AddressInfo} from 'net';
-import * as pEvent from 'p-event';
+import pEvent from 'p-event';
 import * as path from 'path';
 import * as makeRequest from 'request-promise-native';
 import * as rimrafCb from 'rimraf';

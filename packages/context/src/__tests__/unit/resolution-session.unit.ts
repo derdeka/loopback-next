@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/context
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -14,7 +14,7 @@ describe('ResolutionSession', () => {
   function givenInjection(): Injection {
     return {
       target: MyController,
-      bindingKey: 'b',
+      bindingSelector: 'b',
       methodDescriptorOrParameterIndex: 0,
     };
   }

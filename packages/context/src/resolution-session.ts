@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/context
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -169,7 +169,7 @@ export class ResolutionSession {
     );
     return {
       targetName: name,
-      bindingKey: injection.bindingKey,
+      bindingKey: injection.bindingSelector,
       // Cast to Object so that we don't have to expose InjectionMetadata
       metadata: injection.metadata as Object,
     };

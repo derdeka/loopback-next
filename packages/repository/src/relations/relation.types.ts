@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017. All Rights Reserved.
+// Copyright IBM Corp. 2018. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -81,9 +81,9 @@ export interface HasManyThroughDefinition extends RelationDefinitionBase {
    * The foreign key used by the through model to reference the target model.
    *
    * E.g. when a Customer has many Order instances and a Seller has many Order instances,
-   * then targetFkName is "sellerId".
+   * then keyThrough is "sellerId".
    */
-  targetFkName?: string;
+  keyThrough?: string;
 
   /*
    * The primary key in the target model when using through, e.g. Seller#id.

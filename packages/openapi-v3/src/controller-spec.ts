@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/openapi-v3
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -186,6 +186,18 @@ function resolveControllerSpec(constructor: Function): ControllerSpec {
     }
 
     operationSpec['x-operation-name'] = op;
+    operationSpec['x-controller-name'] =
+      operationSpec['x-controller-name'] || constructor.name;
+
+    if (operationSpec.operationId == null) {
+      // Build the operationId as `<controllerName>.<operationName>`
+      // Please note API explorer (https://github.com/swagger-api/swagger-js/)
+      // will normalize it as `<controllerName>_<operationName>`
+      operationSpec.operationId =
+        operationSpec['x-controller-name'] +
+        '.' +
+        operationSpec['x-operation-name'];
+    }
 
     if (!spec.paths[path]) {
       spec.paths[path] = {};

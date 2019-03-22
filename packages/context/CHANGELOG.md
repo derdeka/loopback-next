@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.6.0...@loopback/context@1.7.0) (2019-03-12)
+
+
+### Features
+
+* **context:** add [@inject](https://github.com/inject).view and extend [@inject](https://github.com/inject) for multiple bindings ([d64268b](https://github.com/strongloop/loopback-next/commit/d64268b))
+* **context:** add events to ContextView ([fb10efc](https://github.com/strongloop/loopback-next/commit/fb10efc))
+* **context:** introduce context view to watch bindings by filter ([04209f7](https://github.com/strongloop/loopback-next/commit/04209f7))
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.5.1...@loopback/context@1.6.0) (2019-02-25)
+
+
+### Features
+
+* **context:** introduce async context observers for bind/unbind events ([e5e5fc4](https://github.com/strongloop/loopback-next/commit/e5e5fc4))
+
+
+
+
+
 ## [1.5.1](https://github.com/strongloop/loopback-next/compare/@loopback/context@1.5.0...@loopback/context@1.5.1) (2019-02-08)
 
 **Note:** Version bump only for package @loopback/context

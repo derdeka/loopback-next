@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2019. All Rights Reserved.
+// Node module: @loopback/example-soap-calculator
+// This file is licensed under the MIT License.
+// License text available at https://opensource.org/licenses/MIT
+
 import {
   CalculatorService,
   CalculatorParameters,
@@ -13,35 +18,35 @@ describe('CalculatorService', () => {
   before(givenACalculatorService);
 
   it('adds two numbers', async () => {
-    const response = await calculatorService.Add(<CalculatorParameters>{
+    const response = await calculatorService.add(<CalculatorParameters>{
       intA: 50,
       intB: 2,
     });
-    expect(response.result.AddResult).to.deepEqual(52);
+    expect(response.result.value).to.deepEqual(52);
   });
 
   it('subtracts two numbers', async () => {
-    const response = await calculatorService.Subtract(<CalculatorParameters>{
+    const response = await calculatorService.subtract(<CalculatorParameters>{
       intA: 40,
       intB: 20,
     });
-    expect(response.result.SubtractResult).to.deepEqual(20);
+    expect(response.result.value).to.deepEqual(20);
   });
 
   it('multiplies two numbers', async () => {
-    const response = await calculatorService.Multiply(<CalculatorParameters>{
+    const response = await calculatorService.multiply(<CalculatorParameters>{
       intA: 50,
       intB: 2,
     });
-    expect(response.result.MultiplyResult).to.deepEqual(100);
+    expect(response.result.value).to.deepEqual(100);
   });
 
   it('divides two numbers', async () => {
-    const response = await calculatorService.Divide(<CalculatorParameters>{
+    const response = await calculatorService.divide(<CalculatorParameters>{
       intA: 100,
       intB: 4,
     });
-    expect(response.result.DivideResult).to.deepEqual(25);
+    expect(response.result.value).to.deepEqual(25);
   });
 
   async function givenACalculatorService() {

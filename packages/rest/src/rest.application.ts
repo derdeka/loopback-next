@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/rest
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -226,6 +226,28 @@ export class RestApplication extends Application implements HttpServerLike {
         methodName!,
       );
     }
+  }
+
+  /**
+   * Register a route redirecting callers to a different URL.
+   *
+   * ```ts
+   * app.redirect('/explorer', '/explorer/');
+   * ```
+   *
+   * @param fromPath URL path of the redirect endpoint
+   * @param toPathOrUrl Location (URL path or full URL) where to redirect to.
+   * If your server is configured with a custom `basePath`, then the base path
+   * is prepended to the target location.
+   * @param statusCode HTTP status code to respond with,
+   *   defaults to 303 (See Other).
+   */
+  redirect(
+    fromPath: string,
+    toPathOrUrl: string,
+    statusCode?: number,
+  ): Binding {
+    return this.restServer.redirect(fromPath, toPathOrUrl, statusCode);
   }
 
   /**

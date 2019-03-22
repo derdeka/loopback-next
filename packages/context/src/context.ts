@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2017,2019. All Rights Reserved.
 // Node module: @loopback/context
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -10,6 +10,7 @@ import {ValueOrPromise} from '.';
 import {Binding, BindingTag} from './binding';
 import {BindingFilter, filterByKey, filterByTag} from './binding-filter';
 import {BindingAddress, BindingKey} from './binding-key';
+import {ContextView} from './context-view';
 import {
   ContextEventObserver,
   ContextEventType,
@@ -28,9 +29,8 @@ if (!Symbol.asyncIterator) {
   // tslint:disable-next-line:no-any
   (Symbol as any).asyncIterator = Symbol.for('Symbol.asyncIterator');
 }
-
-// FIXME: `@types/p-event` is out of date against `p-event@2.2.0`
-const pEvent = require('p-event');
+// This import must happen after the polyfill
+import {iterator, multiple} from 'p-event';
 
 const debug = debugModule('loopback:context');
 
@@ -229,7 +229,7 @@ export class Context extends EventEmitter {
     this.setupNotification('bind', 'unbind');
 
     // Create an async iterator for the `notification` event as a queue
-    this.notificationQueue = pEvent.iterator(this, 'notification');
+    this.notificationQueue = iterator(this, 'notification');
 
     return this.processNotifications();
   }
@@ -297,7 +297,7 @@ export class Context extends EventEmitter {
   protected async waitUntilPendingNotificationsDone(timeout?: number) {
     const count = this.pendingNotifications;
     if (count === 0) return;
-    await pEvent.multiple(this, 'observersNotified', {count, timeout});
+    await multiple(this, 'observersNotified', {count, timeout});
   }
 
   /**
@@ -418,6 +418,16 @@ export class Context extends EventEmitter {
   isSubscribed(observer: ContextObserver) {
     if (!this.observers) return false;
     return this.observers.has(observer);
+  }
+
+  /**
+   * Create a view of the context chain with the given binding filter
+   * @param filter A function to match bindings
+   */
+  createView<T = unknown>(filter: BindingFilter) {
+    const view = new ContextView<T>(this, filter);
+    view.open();
+    return view;
   }
 
   /**
@@ -545,7 +555,7 @@ export class Context extends EventEmitter {
   }
 
   /**
-   * Get the value bound to the given key, throw an error when no value was
+   * Get the value bound to the given key, throw an error when no value is
    * bound for the given key.
    *
    * @example
@@ -576,7 +586,7 @@ export class Context extends EventEmitter {
    *
    * ```ts
    * // get "rest" property from the value bound to "config"
-   * // use "undefined" when not config was provided
+   * // use `undefined` when no config is provided
    * const config = await ctx.get<RestComponentConfig>('config#rest', {
    *   optional: true
    * });
@@ -587,7 +597,7 @@ export class Context extends EventEmitter {
    * @param optionsOrSession Options or session for resolution. An instance of
    * `ResolutionSession` is accepted for backward compatibility.
    * @returns A promise of the bound value, or a promise of undefined when
-   * the optional binding was not found.
+   * the optional binding is not found.
    */
   get<ValueType>(
     keyWithPath: BindingAddress<ValueType>,
@@ -644,7 +654,7 @@ export class Context extends EventEmitter {
    *
    * ```ts
    * // get "rest" property from the value bound to "config"
-   * // use "undefined" when no config was provided
+   * // use "undefined" when no config is provided
    * const config = await ctx.getSync<RestComponentConfig>('config#rest', {
    *   optional: true
    * });
@@ -654,7 +664,7 @@ export class Context extends EventEmitter {
    *   (deeply) nested property to retrieve.
    * * @param optionsOrSession Options or session for resolution. An instance of
    * `ResolutionSession` is accepted for backward compatibility.
-   * @returns The bound value, or undefined when an optional binding was not found.
+   * @returns The bound value, or undefined when an optional binding is not found.
    */
   getSync<ValueType>(
     keyWithPath: BindingAddress<ValueType>,
@@ -722,7 +732,9 @@ export class Context extends EventEmitter {
     }
 
     if (options && options.optional) return undefined;
-    throw new Error(`The key ${key} was not bound to any value.`);
+    throw new Error(
+      `The key '${key}' is not bound to any value in context ${this.name}`,
+    );
   }
 
   /**
@@ -749,7 +761,7 @@ export class Context extends EventEmitter {
    *   (deeply) nested property to retrieve.
    * @param optionsOrSession Options for resolution or a session
    * @returns The bound value or a promise of the bound value, depending
-   *   on how the binding was configured.
+   *   on how the binding is configured.
    * @internal
    */
   getValueOrPromise<ValueType>(

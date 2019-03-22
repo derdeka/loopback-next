@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/example-todo-list
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -80,6 +80,19 @@ describe('TodoListApplication', () => {
       expect(response.body)
         .to.containDeep(myTodos)
         .and.not.containEql(notMyTodo.toJSON());
+    });
+
+    // https://github.com/strongloop/loopback-next/issues/2495
+    it('finds todos for a todoList more than once', async () => {
+      await client
+        .get(`/todo-lists/${persistedTodoList.id}/todos`)
+        .send()
+        .expect(200);
+
+      await client
+        .get(`/todo-lists/${persistedTodoList.id}/todos`)
+        .send()
+        .expect(200);
     });
 
     it('updates todos for a todoList', async () => {

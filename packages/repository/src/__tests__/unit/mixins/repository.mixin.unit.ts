@@ -1,9 +1,9 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2019. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Application, BindingScope, Component} from '@loopback/core';
+import {Application, BindingScope, Component, bind} from '@loopback/core';
 import {expect, sinon} from '@loopback/testlab';
 import {
   Class,
@@ -30,6 +30,16 @@ describe('RepositoryMixin', () => {
     expectNoteRepoToNotBeBound(myApp);
     myApp.repository(NoteRepo);
     expectNoteRepoToBeBound(myApp);
+  });
+
+  it('binds singleton repository from app.repository()', () => {
+    @bind({scope: BindingScope.SINGLETON})
+    class SingletonNoteRepo extends NoteRepo {}
+
+    const myApp = new AppWithRepoMixin();
+
+    const binding = myApp.repository(SingletonNoteRepo);
+    expect(binding.scope).to.equal(BindingScope.SINGLETON);
   });
 
   it('mixed class has .getRepository()', () => {
@@ -199,6 +209,8 @@ describe('RepositoryMixin', () => {
   function expectNoteRepoToBeBound(myApp: Application) {
     const boundRepositories = myApp.find('repositories.*').map(b => b.key);
     expect(boundRepositories).to.containEql('repositories.NoteRepo');
+    const binding = myApp.getBinding('repositories.NoteRepo');
+    expect(binding.scope).to.equal(BindingScope.TRANSIENT);
     const repoInstance = myApp.getSync('repositories.NoteRepo');
     expect(repoInstance).to.be.instanceOf(NoteRepo);
   }

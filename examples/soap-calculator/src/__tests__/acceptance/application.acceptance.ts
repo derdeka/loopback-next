@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2019. All Rights Reserved.
+// Node module: @loopback/example-soap-calculator
+// This file is licensed under the MIT License.
+// License text available at https://opensource.org/licenses/MIT
+
 import {Client, createRestAppClient, expect} from '@loopback/testlab';
 import {SoapCalculatorApplication} from '../../application';
 
@@ -58,25 +63,25 @@ describe('Application', function() {
 
   it('divides two numbers', async () => {
     const response = await client.get('/divide/50/2').expect(200);
-    const answer = {result: {DivideResult: 25}};
+    const answer = {result: {value: 25}};
     expect(response.body).to.containDeep(answer);
   });
 
   it('adds two numbers', async () => {
     const response = await client.get('/add/25/25').expect(200);
-    const answer = {result: {AddResult: 50}};
+    const answer = {result: {value: 50}};
     expect(response.body).to.containDeep(answer);
   });
 
   it('multiplies two numbers', async () => {
     const response = await client.get('/multiply/25/3').expect(200);
-    const answer = {result: {MultiplyResult: 75}};
+    const answer = {result: {value: 75}};
     expect(response.body).to.containDeep(answer);
   });
 
   it('subtracts two numbers', async () => {
     const response = await client.get('/subtract/100/25').expect(200);
-    const answer = {result: {SubtractResult: 75}};
+    const answer = {result: {value: 75}};
     expect(response.body).to.containDeep(answer);
   });
 

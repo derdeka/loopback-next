@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017,2018. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/cli
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
@@ -415,9 +415,11 @@ module.exports = class RepositoryGenerator extends ArtifactGenerator {
         type: 'list',
         name: 'repositoryBaseClass',
         message: PROMPT_BASE_REPOSITORY_CLASS,
-        when: this.artifactInfo.repositoryBaseClass === undefined,
         choices: availableRepositoryList,
-        default: availableRepositoryList[0],
+        default:
+          this.artifactInfo.repositoryBaseClass === undefined
+            ? availableRepositoryList[0]
+            : this.options.repositoryBaseClass,
       },
     ])
       .then(props => {
