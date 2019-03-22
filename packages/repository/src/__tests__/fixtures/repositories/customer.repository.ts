@@ -1,21 +1,15 @@
-// Copyright IBM Corp. 2019. All Rights Reserved.
+// Copyright IBM Corp. 2018,2019. All Rights Reserved.
 // Node module: @loopback/repository
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Getter, inject} from '@loopback/context';
-import {
-  DefaultCrudRepository,
-  HasManyRepositoryFactory,
-  HasManyThroughRepositoryFactory,
-  juggler,
-  repository,
-} from '../../..';
-import {Customer, Order, Address, Seller} from '../models';
-import {OrderRepository} from './order.repository';
-import {HasOneRepositoryFactory} from '../../../';
-import {AddressRepository} from './address.repository';
-import {SellerRepository} from './seller.repository';
+import { Getter, inject } from '@loopback/context';
+import { BelongsToAccessor, DefaultCrudRepository, HasManyRepositoryFactory, HasManyThroughRepositoryFactory, juggler, repository } from '../../..';
+import { HasOneRepositoryFactory } from '../../../';
+import { Address, Customer, Order, Seller } from '../models';
+import { AddressRepository } from './address.repository';
+import { OrderRepository } from './order.repository';
+import { SellerRepository } from './seller.repository';
 
 export class CustomerRepository extends DefaultCrudRepository<
   Customer,
@@ -27,6 +21,14 @@ export class CustomerRepository extends DefaultCrudRepository<
   >;
   public readonly address: HasOneRepositoryFactory<
     Address,
+    typeof Customer.prototype.id
+  >;
+  public readonly customers: HasManyRepositoryFactory<
+    Customer,
+    typeof Customer.prototype.id
+  >;
+  public readonly parent: BelongsToAccessor<
+    Customer,
     typeof Customer.prototype.id
   >;
   public readonly sellers: HasManyThroughRepositoryFactory<
@@ -52,6 +54,14 @@ export class CustomerRepository extends DefaultCrudRepository<
     this.address = this.createHasOneRepositoryFactoryFor(
       'address',
       addressRepositoryGetter,
+    );
+    this.customers = this.createHasManyRepositoryFactoryFor(
+      'customers',
+      Getter.fromValue(this),
+    );
+    this.parent = this.createBelongsToAccessorFor(
+      'parent',
+      Getter.fromValue(this),
     );
     this.sellers = this.createHasManyThroughRepositoryFactoryFor(
       'sellers',
