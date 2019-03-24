@@ -6,10 +6,9 @@
 import * as debugFactory from 'debug';
 import {camelCase} from 'lodash';
 import {DataObject} from '../../common-types';
-import {EntityNotFoundError, InvalidRelationError} from '../../errors';
+import {InvalidRelationError} from '../../errors';
 import {Entity} from '../../model';
 import {EntityCrudRepository} from '../../repositories/repository';
-import {constrainFilter} from '../../repositories/constraint-utils';
 import {isTypeResolver} from '../../type-resolver';
 import {Getter, HasManyThroughDefinition} from '../relation.types';
 import {
@@ -59,15 +58,20 @@ export function createHasManyThroughRepositoryFactory<
   const meta = resolveHasManyThroughMetadata(relationMetadata);
   debug('Resolved HasMany relation metadata: %o', meta);
   return function(fkValue?: ForeignKeyType) {
-    async function getAdvancedConstraint(
-      targetInstance: Target,
-    ): Promise<AdvancedConstraint<Target | Through>> {
-      return createAdvancedConstraint<
+    function getTargetContraint(
+      throughInstances: Through[],
+    ): DataObject<Target> {
+      return createTargetConstraint<Target, Through>(meta, throughInstances);
+    }
+    function getThroughConstraint(
+      targetInstance?: Target,
+    ): DataObject<Through> {
+      const constriant: DataObject<Through> = createThroughConstraint<
         Target,
         Through,
-        ThroughID,
         ForeignKeyType
-      >(targetInstance, meta, throughRepositoryGetter, fkValue);
+      >(meta, fkValue, targetInstance);
+      return constriant;
     }
     return new DefaultHasManyThroughRepository<
       Target,
@@ -76,7 +80,12 @@ export function createHasManyThroughRepositoryFactory<
       Through,
       ThroughID,
       EntityCrudRepository<Through, ThroughID>
-    >(targetRepositoryGetter, throughRepositoryGetter, getAdvancedConstraint);
+    >(
+      targetRepositoryGetter,
+      throughRepositoryGetter,
+      getTargetContraint,
+      getThroughConstraint,
+    );
   };
 }
 
@@ -86,55 +95,41 @@ type HasManyThroughResolvedDefinition = HasManyThroughDefinition & {
   targetPrimaryKey: string;
 };
 
-async function createAdvancedConstraint<
+function createTargetConstraint<Target extends Entity, Through extends Entity>(
+  meta: HasManyThroughResolvedDefinition,
+  throughInstances: Through[],
+): DataObject<Target> {
+  const {targetPrimaryKey} = meta;
+  const targetFkName = meta.keyThrough;
+  // tslint:disable-next-line:no-any
+  const constraint: any = {
+    or: throughInstances.map((throughInstance: Through) => {
+      return {
+        [targetPrimaryKey]: throughInstance[targetFkName as keyof Through],
+      };
+    }),
+  };
+  return constraint;
+}
+
+function createThroughConstraint<
   Target extends Entity,
   Through extends Entity,
-  ThroughID,
   ForeignKeyType
 >(
-  targetInstance: Target,
   meta: HasManyThroughResolvedDefinition,
-  throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
   fkValue?: ForeignKeyType,
-): Promise<AdvancedConstraint<Target | Through>> {
-  // tslint:disable-next-line:no-any
-  const sourceFkName = meta.keyTo;
-  const targetFkName = meta.keyThrough;
+  targetInstance?: Target,
+): DataObject<Through> {
   const {targetPrimaryKey} = meta;
-  const advancedConstraint: any = {
-    dataObject: {[sourceFkName]: fkValue} as DataObject<Through>,
-    filter: {},
-    where: {},
-  };
+  const targetFkName = meta.keyThrough;
+  const sourceFkName = meta.keyTo;
+  // tslint:disable-next-line:no-any
+  let constraint: any = {[sourceFkName]: fkValue};
   if (targetInstance) {
-    // through constraint
-    advancedConstraint.dataObject[targetFkName] =
-      targetInstance[meta.targetPrimaryKey as keyof Target];
-    advancedConstraint.where = {where: advancedConstraint.dataObject};
-  } else {
-    // target constraint
-    const throughRepo = await throughRepositoryGetter();
-    const throughInstances = await throughRepo.find(
-      constrainFilter(undefined, advancedConstraint.dataObject),
-    );
-    if (!throughInstances.length) {
-      const id =
-        'through constraint ' + JSON.stringify(advancedConstraint.dataObject);
-      throw new EntityNotFoundError(throughRepo.entityClass, id);
-    }
-    advancedConstraint.dataObject = {};
-    advancedConstraint.where = {
-      or: throughInstances.map((throughInstance: Through) => {
-        return {
-          [targetPrimaryKey]: throughInstance[targetFkName as keyof Through],
-        };
-      }),
-    };
+    constraint[targetFkName] = targetInstance[targetPrimaryKey as keyof Target];
   }
-  advancedConstraint.filter = {
-    where: advancedConstraint.where,
-  };
-  return advancedConstraint as AdvancedConstraint<Target | Through>;
+  return constraint;
 }
 
 /**

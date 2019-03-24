@@ -13,7 +13,6 @@ import {
   constrainWhere,
 } from '../../repositories/constraint-utils';
 import {EntityCrudRepository} from '../../repositories/repository';
-import {AdvancedConstraint} from './has-many-through-repository.factory';
 
 /**
  * CRUD operations for a target repository of a HasMany relation
@@ -81,9 +80,12 @@ export class DefaultHasManyThroughRepository<
   constructor(
     public getTargetRepository: Getter<TargetRepository>,
     public getThroughRepository: Getter<ThroughRepository>,
-    public getAdvancedConstraint: (
+    public getTargetConstraint: (
+      throughInstances: ThroughEntity[],
+    ) => DataObject<TargetEntity>,
+    public getThroughConstraint: (
       targetInstance?: TargetEntity,
-    ) => Promise<AdvancedConstraint<TargetEntity | ThroughEntity>>,
+    ) => DataObject<ThroughEntity>,
   ) {}
 
   async create(
@@ -93,17 +95,16 @@ export class DefaultHasManyThroughRepository<
     throughOptions?: Options,
   ): Promise<TargetEntity> {
     const targetRepository = await this.getTargetRepository();
+    const throughRepository = await this.getThroughRepository();
     const targetInstance = await targetRepository.create(
       targetModelData,
       options,
     );
-    const advancedConstraint = await this.getAdvancedConstraint(targetInstance);
-    const throughRepository = await this.getThroughRepository();
+    const throughConstraint = this.getThroughConstraint(targetInstance);
     await throughRepository.create(
-      constrainDataObject(
-        throughModelData,
-        advancedConstraint.dataObject as DataObject<ThroughEntity>,
-      ),
+      constrainDataObject(throughModelData, throughConstraint as DataObject<
+        ThroughEntity
+      >),
       throughOptions,
     );
     return targetInstance;
@@ -113,21 +114,31 @@ export class DefaultHasManyThroughRepository<
     filter?: Filter<TargetEntity>,
     options?: Options,
   ): Promise<TargetEntity[]> {
-    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
+    const throughRepository = await this.getThroughRepository();
+    const throughConstraint = this.getThroughConstraint();
+    const throughInstances = await throughRepository.find(
+      constrainFilter(undefined, throughConstraint),
+      options,
+    );
+    const targetConstraint = this.getTargetConstraint(throughInstances);
     return targetRepository.find(
-      constrainFilter(filter, advancedConstraint.filter as Filter<
-        TargetEntity
-      >),
+      constrainFilter(filter, targetConstraint),
       options,
     );
   }
 
   async delete(where?: Where<TargetEntity>, options?: Options): Promise<Count> {
-    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
+    const throughRepository = await this.getThroughRepository();
+    const throughConstraint = this.getThroughConstraint();
+    const throughInstances = await throughRepository.find(
+      constrainFilter(undefined, throughConstraint),
+      options,
+    );
+    const targetConstraint = this.getTargetConstraint(throughInstances);
     return targetRepository.deleteAll(
-      constrainWhere(where, advancedConstraint.where as Where<TargetEntity>),
+      constrainWhere(where, targetConstraint as Where<TargetEntity>),
       options,
     );
   }
@@ -137,14 +148,17 @@ export class DefaultHasManyThroughRepository<
     where?: Where<TargetEntity>,
     options?: Options,
   ): Promise<Count> {
-    const advancedConstraint = await this.getAdvancedConstraint();
     const targetRepository = await this.getTargetRepository();
+    const throughRepository = await this.getThroughRepository();
+    const throughConstraint = this.getThroughConstraint();
+    const throughInstances = await throughRepository.find(
+      constrainFilter(undefined, throughConstraint),
+      options,
+    );
+    const targetConstraint = this.getTargetConstraint(throughInstances);
     return targetRepository.updateAll(
-      constrainDataObject(
-        dataObject,
-        advancedConstraint.dataObject as DataObject<TargetEntity>,
-      ),
-      constrainWhere(where, advancedConstraint.where as Where<TargetEntity>),
+      constrainDataObject(dataObject, targetConstraint),
+      constrainWhere(where, targetConstraint as Where<TargetEntity>),
       options,
     );
   }

@@ -97,7 +97,6 @@ describe('HasManyThrough relation', () => {
       patchObject,
     );
     expect(arePatched.count).to.equal(2);
-
     const patchedData = _.map(
       await controller.findCustomerSellers(existingCustomerId),
       d => _.pick(d, ['name']),
