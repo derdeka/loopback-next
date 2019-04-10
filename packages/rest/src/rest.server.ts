@@ -38,13 +38,16 @@ import {
   ControllerInstance,
   ControllerRoute,
   createControllerFactoryForBinding,
+  ExpressRequestHandler,
   ExternalExpressRoutes,
   RedirectRoute,
   RestRouterOptions,
   Route,
   RouteEntry,
+  RouterSpec,
   RoutingTable,
 } from './router';
+import {assignRouterSpec} from './router/router-spec';
 import {DefaultSequence, SequenceFunction, SequenceHandler} from './sequence';
 import {
   FindRoute,
@@ -151,7 +154,23 @@ export class RestServer extends Context implements Server, HttpServerLike {
     return this._httpServer ? this._httpServer.listening : false;
   }
 
+  /**
+   * The base url for the server, including the basePath if set. For example,
+   * the value will be 'http://localhost:3000/api' if `basePath` is set to
+   * '/api'.
+   */
   get url(): string | undefined {
+    let serverUrl = this.rootUrl;
+    if (!serverUrl) return serverUrl;
+    serverUrl = serverUrl + (this._basePath || '');
+    return serverUrl;
+  }
+
+  /**
+   * The root url for the server without the basePath. For example, the value
+   * will be 'http://localhost:3000' regardless of the `basePath`.
+   */
+  get rootUrl(): string | undefined {
     return this._httpServer && this._httpServer.url;
   }
 
@@ -665,6 +684,8 @@ export class RestServer extends Context implements Server, HttpServerLike {
       spec.components = spec.components || {};
       spec.components.schemas = cloneDeep(defs);
     }
+
+    assignRouterSpec(spec, this._externalRoutes.routerSpec);
     return spec;
   }
 
@@ -810,6 +831,25 @@ export class RestServer extends Context implements Server, HttpServerLike {
     process.nextTick(() => {
       throw err;
     });
+  }
+
+  /**
+   * Mount an Express router to expose additional REST endpoints handled
+   * via legacy Express-based stack.
+   *
+   * @param basePath Path where to mount the router at, e.g. `/` or `/api`.
+   * @param router The Express router to handle the requests.
+   * @param spec A partial OpenAPI spec describing endpoints provided by the
+   * router. LoopBack will prepend `basePath` to all endpoints automatically.
+   * This argument is optional. You can leave it out if you don't want to
+   * document the routes.
+   */
+  mountExpressRouter(
+    basePath: string,
+    router: ExpressRequestHandler,
+    spec?: RouterSpec,
+  ): void {
+    this._externalRoutes.mountRouter(basePath, router, spec);
   }
 }
 

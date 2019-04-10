@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.2...@loopback/testlab@1.2.3) (2019-04-09)
+
+**Note:** Version bump only for package @loopback/testlab
+
+
+
+
+
+## [1.2.2](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.1...@loopback/testlab@1.2.2) (2019-04-05)
+
+
+### Bug Fixes
+
+* **rest:** make sure basePath is included in RestServer.url ([705bce4](https://github.com/strongloop/loopback-next/commit/705bce4))
+
+
+
+
+
 ## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/testlab@1.2.0...@loopback/testlab@1.2.1) (2019-03-22)
 
 

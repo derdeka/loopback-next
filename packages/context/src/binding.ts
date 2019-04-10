@@ -3,11 +3,16 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import * as debugModule from 'debug';
+import * as debugFactory from 'debug';
 import {BindingAddress, BindingKey} from './binding-key';
 import {Context} from './context';
 import {Provider} from './provider';
-import {ResolutionSession} from './resolution-session';
+import {
+  asResolutionOptions,
+  ResolutionOptions,
+  ResolutionOptionsOrSession,
+  ResolutionSession,
+} from './resolution-session';
 import {instantiateClass} from './resolver';
 import {
   BoundValue,
@@ -18,7 +23,7 @@ import {
   ValueOrPromise,
 } from './value-promise';
 
-const debug = debugModule('loopback:context:binding');
+const debug = debugFactory('loopback:context:binding');
 
 /**
  * Scope for binding values
@@ -113,6 +118,10 @@ export enum BindingType {
    * A provider class with `value()` function to get the value
    */
   PROVIDER = 'Provider',
+  /**
+   * A alias to another binding key with optional path
+   */
+  ALIAS = 'Alias',
 }
 
 // tslint:disable-next-line:no-any
@@ -127,6 +136,11 @@ export type BindingTag = TagMap | string;
  * A function as the template to configure bindings
  */
 export type BindingTemplate<T = unknown> = (binding: Binding<T>) => void;
+
+type ValueGetter<T> = (
+  ctx: Context,
+  options: ResolutionOptions,
+) => ValueOrPromise<T | undefined>;
 
 /**
  * Binding represents an entry in the `Context`. Each binding has a key and a
@@ -161,10 +175,7 @@ export class Binding<T = BoundValue> {
   }
 
   private _cache: WeakMap<Context, T>;
-  private _getValue: (
-    ctx?: Context,
-    session?: ResolutionSession,
-  ) => ValueOrPromise<T>;
+  private _getValue: ValueGetter<T>;
 
   private _valueConstructor?: Constructor<T>;
   /**
@@ -205,6 +216,15 @@ export class Binding<T = BoundValue> {
   }
 
   /**
+   * Clear the cache
+   */
+  private _clearCache() {
+    if (!this._cache) return;
+    // WeakMap does not have a `clear` method
+    this._cache = new WeakMap();
+  }
+
+  /**
    * This is an internal function optimized for performance.
    * Users should use `@inject(key)` or `ctx.get(key)` instead.
    *
@@ -228,7 +248,25 @@ export class Binding<T = BoundValue> {
    * @param ctx Context for the resolution
    * @param session Optional session for binding and dependency resolution
    */
-  getValue(ctx: Context, session?: ResolutionSession): ValueOrPromise<T> {
+  getValue(ctx: Context, session?: ResolutionSession): ValueOrPromise<T>;
+
+  /**
+   * Returns a value or promise for this binding in the given context. The
+   * resolved value can be `undefined` if `optional` is set to `true` in
+   * `options`.
+   * @param ctx Context for the resolution
+   * @param options Optional options for binding and dependency resolution
+   */
+  getValue(
+    ctx: Context,
+    options?: ResolutionOptions,
+  ): ValueOrPromise<T | undefined>;
+
+  // Implementation
+  getValue(
+    ctx: Context,
+    optionsOrSession?: ResolutionOptionsOrSession,
+  ): ValueOrPromise<T | undefined> {
     /* istanbul ignore if */
     if (debug.enabled) {
       debug('Get value for binding %s', this.key);
@@ -246,11 +284,15 @@ export class Binding<T = BoundValue> {
         }
       }
     }
+    const options = asResolutionOptions(optionsOrSession);
     if (this._getValue) {
       let result = ResolutionSession.runWithBinding(
-        s => this._getValue(ctx, s),
+        s => {
+          const optionsWithSession = Object.assign({}, options, {session: s});
+          return this._getValue(ctx, optionsWithSession);
+        },
         this,
-        session,
+        options.session,
       );
       return this._cacheValue(ctx, result);
     }
@@ -317,6 +359,7 @@ export class Binding<T = BoundValue> {
    * @param scope Binding scope
    */
   inScope(scope: BindingScope): this {
+    if (this._scope !== scope) this._clearCache();
     this._scope = scope;
     return this;
   }
@@ -328,9 +371,19 @@ export class Binding<T = BoundValue> {
    */
   applyDefaultScope(scope: BindingScope): this {
     if (!this._scope) {
-      this._scope = scope;
+      this.inScope(scope);
     }
     return this;
+  }
+
+  /**
+   * Set the `_getValue` function
+   * @param getValue getValue function
+   */
+  private _setValueGetter(getValue: ValueGetter<T>) {
+    // Clear the cache
+    this._clearCache();
+    this._getValue = getValue;
   }
 
   /**
@@ -372,7 +425,7 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to constant:', this.key, value);
     }
     this._type = BindingType.CONSTANT;
-    this._getValue = () => value;
+    this._setValueGetter(() => value);
     return this;
   }
 
@@ -400,7 +453,7 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to dynamic value:', this.key, factoryFn);
     }
     this._type = BindingType.DYNAMIC_VALUE;
-    this._getValue = ctx => factoryFn();
+    this._setValueGetter(ctx => factoryFn());
     return this;
   }
 
@@ -426,14 +479,14 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to provider %s', this.key, providerClass.name);
     }
     this._type = BindingType.PROVIDER;
-    this._getValue = (ctx, session) => {
+    this._setValueGetter((ctx, options) => {
       const providerOrPromise = instantiateClass<Provider<T>>(
         providerClass,
-        ctx!,
-        session,
+        ctx,
+        options.session,
       );
       return transformValueOrPromise(providerOrPromise, p => p.value());
-    };
+    });
     return this;
   }
 
@@ -450,11 +503,34 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to class %s', this.key, ctor.name);
     }
     this._type = BindingType.CLASS;
-    this._getValue = (ctx, session) => instantiateClass(ctor, ctx!, session);
+    this._setValueGetter((ctx, options) =>
+      instantiateClass(ctor, ctx, options.session),
+    );
     this._valueConstructor = ctor;
     return this;
   }
 
+  /**
+   * Bind the key to an alias of another binding
+   * @param keyWithPath Target binding key with optional path,
+   * such as `servers.RestServer.options#apiExplorer`
+   */
+  toAlias(keyWithPath: BindingAddress<T>) {
+    /* istanbul ignore if */
+    if (debug.enabled) {
+      debug('Bind %s to alias %s', this.key, keyWithPath);
+    }
+    this._type = BindingType.ALIAS;
+    this._setValueGetter((ctx, optionsOrSession) => {
+      const options = asResolutionOptions(optionsOrSession);
+      return ctx.getValueOrPromise(keyWithPath, options);
+    });
+    return this;
+  }
+
+  /**
+   * Unlock the binding
+   */
   unlock(): this {
     this.isLocked = false;
     return this;
