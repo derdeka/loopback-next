@@ -55,7 +55,13 @@ export function instantiateClass<T>(
       debug('Non-injected arguments:', nonInjectedArgs);
     }
   }
-  const argsOrPromise = resolveInjectedArguments(ctor, '', ctx, session);
+  const argsOrPromise = resolveInjectedArguments(
+    ctor,
+    '',
+    ctx,
+    session,
+    nonInjectedArgs,
+  );
   const propertiesOrPromise = resolveInjectedProperties(ctor, ctx, session);
   const inst: ValueOrPromise<T> = transformValueOrPromise(
     argsOrPromise,
@@ -146,7 +152,7 @@ function resolve<T>(
           session: s,
           // If the `optional` flag is set for the injection, the resolution
           // will return `undefined` instead of throwing an error
-          optional: injection.metadata && injection.metadata.optional,
+          optional: injection.metadata.optional,
         });
       }
     },

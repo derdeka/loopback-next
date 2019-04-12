@@ -18,9 +18,9 @@
     "coveralls": "^3.0.0",
     "cz-conventional-changelog": "^2.1.0",
     "husky": "^1.3.1",
-    "lerna": "^3.13.0",
-    "tslint": "^5.14.0",
-    "typescript": "^3.4.1"
+    "lerna": "^3.13.2",
+    "tslint": "^5.15.0",
+    "typescript": "^3.4.3"
   },
   "scripts": {
     "postinstall": "lerna bootstrap",
@@ -34,7 +34,7 @@
     "sync-dev-deps": "node bin/sync-dev-deps",
     "version": "npm run update-packages && git add greenkeeper.json \"**/package-lock.json\" && npm run update-template-deps && npm run apidocs",
     "outdated": "npm outdated --depth 0 && lerna exec --no-bail \"npm outdated --depth 0\"",
-    "apidocs": "node bin/run-lerna run build:apidocs",
+    "apidocs": "node bin/run-lerna run --concurrency 1 build:apidocs",
     "coverage:ci": "node packages/build/bin/run-nyc report --reporter=text-lcov | coveralls",
     "precoverage": "npm test",
     "coverage": "open coverage/index.html",
