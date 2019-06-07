@@ -60,14 +60,14 @@ export function createHasManyThroughRepositoryFactory<
   debug('Resolved HasMany relation metadata: %o', meta);
   return function(fkValue?: ForeignKeyType) {
     async function getAdvancedConstraint(
-      targetInstance: Target,
+      targetInstance?: Target,
     ): Promise<AdvancedConstraint<Target | Through>> {
       return createAdvancedConstraint<
         Target,
         Through,
         ThroughID,
         ForeignKeyType
-      >(targetInstance, meta, throughRepositoryGetter, fkValue);
+      >(meta, throughRepositoryGetter, targetInstance, fkValue);
     }
     return new DefaultHasManyThroughRepository<
       Target,
@@ -92,15 +92,15 @@ async function createAdvancedConstraint<
   ThroughID,
   ForeignKeyType
 >(
-  targetInstance: Target,
   meta: HasManyThroughResolvedDefinition,
   throughRepositoryGetter: Getter<EntityCrudRepository<Through, ThroughID>>,
+  targetInstance?: Target,
   fkValue?: ForeignKeyType,
 ): Promise<AdvancedConstraint<Target | Through>> {
-  // tslint:disable-next-line:no-any
   const sourceFkName = meta.keyTo;
   const targetFkName = meta.keyThrough;
   const {targetPrimaryKey} = meta;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const advancedConstraint: any = {
     dataObject: {[sourceFkName]: fkValue} as DataObject<Through>,
     filter: {},

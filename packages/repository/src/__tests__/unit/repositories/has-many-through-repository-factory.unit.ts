@@ -51,7 +51,7 @@ describe('createHasManyThroughRepositoryFactory', () => {
 
   it('rejects relations with a target that is not a type resolver', () => {
     const relationMeta = givenHasManyThroughDefinition({
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: Customer as any,
       // the cast to any above is necessary to disable compile check
       // we want to verify runtime assertion
