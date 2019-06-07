@@ -7,8 +7,6 @@ import {Class} from '../common-types';
 import {Model} from '../model';
 import {ObjectType} from './object';
 
-// tslint:disable:no-any
-
 /**
  * Model type
  */

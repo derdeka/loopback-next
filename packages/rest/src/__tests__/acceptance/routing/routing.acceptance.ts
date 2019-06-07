@@ -12,7 +12,12 @@ import {
   ParameterObject,
   ResponseObject,
 } from '@loopback/openapi-v3-types';
-import {Client, createClientForHandler, expect} from '@loopback/testlab';
+import {
+  Client,
+  createClientForHandler,
+  createUnexpectedHttpErrorLogger,
+  expect,
+} from '@loopback/testlab';
 import {
   ControllerClass,
   ControllerInstance,
@@ -28,7 +33,6 @@ import {
   RestServer,
   SequenceActions,
 } from '../../..';
-import {createUnexpectedHttpErrorLogger} from '../../helpers';
 
 /* # Feature: Routing
  * - In order to build REST APIs
@@ -754,7 +758,7 @@ describe('Routing', () => {
       const server = await app.getServer(RestServer);
       const handler = await server.get(RestBindings.HANDLER);
       // Use a hack to verify the bound router is used by the handler
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((handler as any)._routes._router).to.be.instanceof(RegExpRouter);
     });
 

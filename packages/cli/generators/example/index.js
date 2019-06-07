@@ -21,8 +21,14 @@ const EXAMPLES = {
   'soap-calculator': 'An example on how to integrate SOAP web services.',
   'express-composition':
     'A simple Express application that uses LoopBack 4 REST API.',
+  context: 'Standalone examples showing how to use @loopback/context.',
   'greeter-extension':
     'An example showing how to implement the extension point/extension pattern.',
+  'greeting-app':
+    'An example showing how to compose an application from component and ' +
+    'controllers, interceptors, and observers.',
+  'lb3-application':
+    'An example LoopBack 3 application mounted in a LoopBack 4 project.',
 };
 Object.freeze(EXAMPLES);
 

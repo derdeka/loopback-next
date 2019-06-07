@@ -5,14 +5,15 @@
 
 import 'reflect-metadata';
 
-/* tslint:disable:no-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/unified-signatures */
 
 /*
  * namespaced wrapper to handle reflect api
  */
 export class NamespacedReflect {
   /**
-   * @param namespace : namespace to bind this reflect context
+   * @param namespace - Namespace to bind this reflect context
    */
   constructor(private namespace?: string) {}
 
@@ -66,9 +67,9 @@ export class NamespacedReflect {
 
   /**
    * Check if the target has corresponding metadata
-   * @param metadataKey Key
-   * @param target Target
-   * @param propertyKey Optional property key
+   * @param metadataKey - Key
+   * @param target - Target
+   * @param propertyKey - Optional property key
    */
   hasMetadata(
     metadataKey: string,
@@ -149,30 +150,45 @@ export class NamespacedReflect {
   }
 
   decorate(
+    decorators: (PropertyDecorator | MethodDecorator)[],
+    target: Object,
+    targetKey?: string | symbol,
+    descriptor?: PropertyDescriptor,
+  ): PropertyDescriptor | Function;
+
+  decorate(
+    decorators: ClassDecorator[],
+    target: Object,
+  ): PropertyDescriptor | Function;
+
+  decorate(
     decorators: (PropertyDecorator | MethodDecorator)[] | ClassDecorator[],
     target: Object,
-    targetKey?: string,
+    targetKey?: string | symbol,
     descriptor?: PropertyDescriptor,
   ): PropertyDescriptor | Function {
     if (targetKey) {
-      return Reflect.decorate(decorators, target, targetKey, descriptor);
+      return Reflect.decorate(
+        <(PropertyDecorator | MethodDecorator)[]>decorators,
+        target,
+        targetKey,
+        descriptor,
+      );
     } else {
       return Reflect.decorate(<ClassDecorator[]>decorators, <Function>target);
     }
   }
 
-  /* tslint:disable-next-line:no-any */
   metadata(
     metadataKey: string,
     metadataValue: any,
   ): {
     (target: Function): void;
-    (target: Object, targetKey: string): void;
+    (target: Object, targetKey: string | symbol): void;
   } {
     metadataKey = this.getMetadataKey(metadataKey);
     return Reflect.metadata(metadataKey, metadataValue);
   }
 }
 
-/* tslint:disable-next-line:variable-name */
 export const Reflector = new NamespacedReflect('loopback');

@@ -3,6 +3,120 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.1.0...@loopback/authentication@2.1.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+# [2.1.0](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.6...@loopback/authentication@2.1.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [2.0.6](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.5...@loopback/authentication@2.0.6) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+## [2.0.5](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.4...@loopback/authentication@2.0.5) (2019-05-30)
+
+
+### Bug Fixes
+
+* **authentication:** fix the options type in decorator ([d4116cf](https://github.com/strongloop/loopback-next/commit/d4116cf))
+
+
+
+
+
+## [2.0.4](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.3...@loopback/authentication@2.0.4) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+## [2.0.3](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.2...@loopback/authentication@2.0.3) (2019-05-14)
+
+
+### Bug Fixes
+
+* include user and token service interfaces in index.ts ([3a1a978](https://github.com/strongloop/loopback-next/commit/3a1a978))
+
+
+
+
+
+## [2.0.2](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.1...@loopback/authentication@2.0.2) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+## [2.0.1](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@2.0.0...@loopback/authentication@2.0.1) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+# [2.0.0](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@1.2.1...@loopback/authentication@2.0.0) (2019-05-06)
+
+
+### Features
+
+* resolve authentication strategy registered via extension point ([e8b8e8b](https://github.com/strongloop/loopback-next/commit/e8b8e8b))
+
+
+### BREAKING CHANGES
+
+* the new interface and authentication action in 2.0 will require users to adjust existing code
+
+
+
+
+
+## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@1.2.0...@loopback/authentication@1.2.1) (2019-04-26)
+
+**Note:** Version bump only for package @loopback/authentication
+
+
+
+
+
+# [1.2.0](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@1.1.2...@loopback/authentication@1.2.0) (2019-04-20)
+
+
+### Bug Fixes
+
+* **authentication:** fix broken link in authentication docs ([ee071f6](https://github.com/strongloop/loopback-next/commit/ee071f6))
+
+
+### Features
+
+* **context:** add `[@inject](https://github.com/inject).binding` and improve `[@inject](https://github.com/inject).setter` ([a396274](https://github.com/strongloop/loopback-next/commit/a396274))
+* introduce an authentication strategy interface ([6ebb283](https://github.com/strongloop/loopback-next/commit/6ebb283))
+
+
+
+
+
 ## [1.1.2](https://github.com/strongloop/loopback-next/compare/@loopback/authentication@1.1.1...@loopback/authentication@1.1.2) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/authentication

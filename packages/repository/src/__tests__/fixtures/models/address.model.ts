@@ -3,29 +3,35 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Entity, model, property, belongsTo} from '../../..';
-import {Customer} from './customer.model';
+import {belongsTo, Entity, model, property} from '../../..';
+import {Customer, CustomerWithRelations} from './customer.model';
 
 @model()
 export class Address extends Entity {
   @property({
     type: 'string',
   })
-  street: String;
+  street: string;
   @property({
     type: 'string',
     id: true,
   })
-  zipcode: String;
+  zipcode: string;
   @property({
     type: 'string',
   })
-  city: String;
+  city: string;
   @property({
     type: 'string',
   })
-  province: String;
+  province: string;
 
   @belongsTo(() => Customer)
   customerId: number;
 }
+
+export interface AddressRelations {
+  customer?: CustomerWithRelations;
+}
+
+export type AddressWithRelations = Address & AddressRelations;

@@ -28,13 +28,11 @@ describe('legacy loopback-datasource-juggler', () => {
   });
 
   it('creates models', () => {
-    /* tslint:disable-next-line:variable-name */
     const Note = ds.createModel<juggler.PersistedModelClass>(
       'note',
       {title: 'string', content: 'string', id: {type: 'number', id: true}},
       {},
     );
-    /* tslint:disable-next-line:variable-name */
     const Note2 = bindModel(Note, ds);
     expect(Note2.modelName).to.eql('note');
     expect(Note2.definition).to.eql(Note.definition);
@@ -95,8 +93,8 @@ describe('DefaultCrudRepository', () => {
       });
 
       created: Date;
-      toBuy: String[];
-      toVisit: String[];
+      toBuy: string[];
+      toVisit: string[];
     }
 
     it('converts PropertyDefinition with array type', () => {
@@ -128,13 +126,13 @@ describe('DefaultCrudRepository', () => {
       @model()
       class Role {
         @property()
-        name: String;
+        name: string;
       }
 
       @model()
       class Address {
         @property()
-        street: String;
+        street: string;
       }
 
       @model()
@@ -146,7 +144,7 @@ describe('DefaultCrudRepository', () => {
         id: number;
 
         @property({type: 'string'})
-        name: String;
+        name: string;
 
         @property.array(Role)
         roles: Role[];
@@ -157,7 +155,6 @@ describe('DefaultCrudRepository', () => {
 
       expect(ds.getModel('User')).undefined();
 
-      // tslint:disable-next-line:no-unused-expression
       new DefaultCrudRepository(User, ds);
 
       const JugglerUser = ds.getModel('User')!;
@@ -180,7 +177,7 @@ describe('DefaultCrudRepository', () => {
         .of.length(1);
 
       // FIXME(bajtos) PropertyDefinition in juggler does not allow array type!
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rolesModel = (rolesProperty.type as any)[0] as typeof juggler.ModelBase;
       expect(rolesModel).to.be.a.Function();
       expect(rolesModel).to.equal(ds.getModel('Role'));
@@ -190,6 +187,10 @@ describe('DefaultCrudRepository', () => {
         name: 'Role',
         properties: {name: {type: String}},
       });
+
+      // issue 2912: make sure the juggler leaves the original model definition alone
+      expect(User.definition.properties.roles.itemType).to.equal(Role);
+      expect(User.definition.properties.address.type).to.equal(Address);
     });
   });
 

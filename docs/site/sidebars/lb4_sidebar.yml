@@ -70,6 +70,10 @@ children:
       url: todo-list-tutorial-controller.html
       output: 'web, pdf'
 
+    - title: 'Running on relational databases'
+      url: todo-list-tutorial-sqldb.html
+      output: 'web, pdf'
+
   - title: 'SOAP Web Service Tutorial'
     url: soap-calculator-tutorial.html
     output: 'web, pdf'
@@ -139,6 +143,14 @@ children:
 
   - title: 'Controllers'
     url: Controllers.html
+    output: 'web, pdf'
+
+  - title: 'Components'
+    url: Components.html
+    output: 'web, pdf'
+
+  - title: 'Interceptors'
+    url: Interceptors.html
     output: 'web, pdf'
 
   - title: 'DataSources'
@@ -258,6 +270,14 @@ children:
     url: Self-hosted-rest-api-explorer.html
     output: 'web, pdf'
 
+  - title: 'Authorization'
+    url: Loopback-component-authorization.html
+    output: 'web, pdf'
+
+  - title: 'Boot and Mount a LoopBack 3 Application'
+    url: Boot-and-Mount-a-LoopBack-3-application.html
+    output: 'web, pdf'
+
 - title: 'Calling other APIs'
   url: Calling-other-APIs-and-web-services.html
   output: 'web, pdf'
@@ -265,6 +285,15 @@ children:
 - title: 'For LoopBack 3.x users'
   url: LoopBack-3.x.html
   output: 'web, pdf'
+  children:
+
+  - title: 'Understanding the differences between LoopBack 3 and LoopBack 4'
+    url: Understanding-the-differences.html
+    output: 'web, pdf'
+
+  - title: 'Migrating from LoopBack 3'
+    url: Migrating-from-LoopBack-3.html
+    output: 'web, pdf'
 
 - title: 'Command-line interface'
   url: Command-line-interface.html
@@ -301,6 +330,14 @@ children:
 
   - title: 'OpenAPI generator'
     url: OpenAPI-generator.html
+    output: 'web, pdf'
+
+  - title: 'Life cycle observer generator'
+    url: Life-cycle-observer-generator.html
+    output: 'web, pdf'
+
+  - title: 'Global interceptor generator'
+    url: Interceptor-generator.html
     output: 'web, pdf'
 
   - title: 'Extension generator'
@@ -345,6 +382,10 @@ children:
     url: Creating-servers.html
     output: 'web, pdf'
 
+  - title: 'Extension point and extensions'
+    url: Extension-point-and-extensions.html
+    output: 'web, pdf'
+
   - title: 'Extending request body parsing'
     url: Extending-request-body-parsing.html
     output: 'web, pdf'
@@ -363,6 +404,10 @@ children:
 
 - title: 'FAQ'
   url: FAQ.html
+  output: 'web, pdf'
+
+- title: 'API docs'
+  url: apidocs.index.html
   output: 'web, pdf'
 
 - title: 'Reference'

@@ -12,13 +12,13 @@ import {
   property,
 } from '@loopback/repository';
 import {expect} from '@loopback/testlab';
-import * as Ajv from 'ajv';
 import {
   getJsonSchema,
   JsonSchema,
   JSON_SCHEMA_KEY,
   modelToJsonSchema,
 } from '../..';
+import {expectValidJsonSchema} from '../helpers/expect-valid-json-schema';
 
 describe('build-schema', () => {
   describe('modelToJsonSchema', () => {
@@ -239,11 +239,11 @@ describe('build-schema', () => {
         @model()
         class TestModel {
           @property({type: 'string'})
-          hardStr: Number;
+          hardStr: number;
           @property({type: 'boolean'})
-          hardBool: String;
+          hardBool: string;
           @property({type: 'number'})
-          hardNum: Boolean;
+          hardNum: boolean;
         }
 
         const jsonSchema = modelToJsonSchema(TestModel);
@@ -281,7 +281,7 @@ describe('build-schema', () => {
         @model()
         class TestModel {
           @property({type: 'NotPrimitive'})
-          bad: String;
+          bad: string;
         }
 
         expect(() => modelToJsonSchema(TestModel)).to.throw(/Unsupported type/);
@@ -591,20 +591,47 @@ describe('build-schema', () => {
       });
     });
 
-    function expectValidJsonSchema(schema: JsonSchema) {
-      const ajv = new Ajv();
-      const validate = ajv.compile(
-        require('ajv/lib/refs/json-schema-draft-06.json'),
-      );
-      const isValid = validate(schema);
-      const result = isValid
-        ? 'JSON Schema is valid'
-        : ajv.errorsText(validate.errors!);
-      expect(result).to.equal('JSON Schema is valid');
-    }
+    context('model conversion', () => {
+      @model()
+      class Category {
+        @property.array(() => Product)
+        products?: Product[];
+      }
+
+      @model()
+      class Product {
+        @property(() => Category)
+        category?: Category;
+      }
+
+      const expectedSchema = {
+        title: 'Category',
+        properties: {
+          products: {
+            type: 'array',
+            items: {$ref: '#/definitions/Product'},
+          },
+        },
+        definitions: {
+          Product: {
+            title: 'Product',
+            properties: {
+              category: {
+                $ref: '#/definitions/Category',
+              },
+            },
+          },
+        },
+      };
+
+      it('handles circular references', () => {
+        const schema = modelToJsonSchema(Category);
+        expect(schema).to.deepEqual(expectedSchema);
+      });
+    });
   });
 
-  describe('getjsonSchema', () => {
+  describe('getJsonSchema', () => {
     it('gets cached JSON schema if one exists', () => {
       @model()
       class TestModel {
@@ -639,6 +666,55 @@ describe('build-schema', () => {
         newProperty: {
           type: 'string',
         },
+      });
+    });
+    it('does not pollute the JSON schema options', () => {
+      @model()
+      class Category {
+        @property()
+        name: string;
+      }
+
+      const JSON_SCHEMA_OPTIONS = {};
+      getJsonSchema(Category, JSON_SCHEMA_OPTIONS);
+      expect(JSON_SCHEMA_OPTIONS).to.be.empty();
+    });
+    context('circular reference', () => {
+      @model()
+      class Category {
+        @property.array(() => Product)
+        products?: Product[];
+      }
+
+      @model()
+      class Product {
+        @property(() => Category)
+        category?: Category;
+      }
+
+      const expectedSchemaForCategory = {
+        title: 'Category',
+        properties: {
+          products: {
+            type: 'array',
+            items: {$ref: '#/definitions/Product'},
+          },
+        },
+        definitions: {
+          Product: {
+            title: 'Product',
+            properties: {
+              category: {
+                $ref: '#/definitions/Category',
+              },
+            },
+          },
+        },
+      };
+
+      it('generates the schema without running into infinite loop', () => {
+        const schema = getJsonSchema(Category);
+        expect(schema).to.deepEqual(expectedSchemaForCategory);
       });
     });
   });

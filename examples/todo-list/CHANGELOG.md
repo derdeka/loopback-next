@@ -3,6 +3,101 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.7.0...@loopback/example-todo-list@1.7.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.6.3...@loopback/example-todo-list@1.7.0) (2019-06-03)
+
+
+### Features
+
+* add navigational properties to find* methods ([1f0aa0b](https://github.com/strongloop/loopback-next/commit/1f0aa0b))
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.6.3](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.6.2...@loopback/example-todo-list@1.6.3) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.6.2](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.6.1...@loopback/example-todo-list@1.6.2) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.6.0...@loopback/example-todo-list@1.6.1) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.11...@loopback/example-todo-list@1.6.0) (2019-05-14)
+
+
+### Features
+
+* add lb3 application ([bf60011](https://github.com/strongloop/loopback-next/commit/bf60011))
+
+
+
+
+
+## [1.5.11](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.10...@loopback/example-todo-list@1.5.11) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.5.10](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.9...@loopback/example-todo-list@1.5.10) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.5.9](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.8...@loopback/example-todo-list@1.5.9) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.5.8](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.7...@loopback/example-todo-list@1.5.8) (2019-04-26)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
+## [1.5.7](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.6...@loopback/example-todo-list@1.5.7) (2019-04-20)
+
+**Note:** Version bump only for package @loopback/example-todo-list
+
+
+
+
+
 ## [1.5.6](https://github.com/strongloop/loopback-next/compare/@loopback/example-todo-list@1.5.5...@loopback/example-todo-list@1.5.6) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/example-todo-list

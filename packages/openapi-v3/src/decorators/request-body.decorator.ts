@@ -3,16 +3,16 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
+import {MetadataInspector, ParameterDecoratorFactory} from '@loopback/context';
 import {
+  ReferenceObject,
   RequestBodyObject,
   SchemaObject,
-  ReferenceObject,
 } from '@loopback/openapi-v3-types';
-import {MetadataInspector, ParameterDecoratorFactory} from '@loopback/context';
-import {resolveSchema} from '../generate-schema';
-import {OAI3Keys} from '../keys';
 import * as _ from 'lodash';
 import {inspect} from 'util';
+import {resolveSchema} from '../generate-schema';
+import {OAI3Keys} from '../keys';
 
 const debug = require('debug')('loopback:openapi3:metadata:requestbody');
 export const REQUEST_BODY_INDEX = 'x-parameter-index';
@@ -20,9 +20,12 @@ export const REQUEST_BODY_INDEX = 'x-parameter-index';
 /**
  * Describe the request body of a Controller method parameter.
  *
- * A typical OpenAPI requestBody spec contains property
- * `description`, `required`, and `content`:
+ * A typical OpenAPI requestBody spec contains property:
+ * - `description`
+ * - `required`
+ * - `content`.
  *
+ * @example
  * ```ts
  * requestBodySpec: {
  *   description: 'a user',
@@ -38,7 +41,8 @@ export const REQUEST_BODY_INDEX = 'x-parameter-index';
  * as `application/json` by default.
  * If the `schema` object is not provided in a media type, this decorator
  * generates it for you based on the argument's type. In this case, please
- * make sure the argument type is a class decorated by @model from `@loopback/repository`
+ * make sure the argument type is a class decorated by `@model` from
+ * `@loopback/repository`
  *
  * The simplest usage is:
  *
@@ -71,14 +75,14 @@ export const REQUEST_BODY_INDEX = 'x-parameter-index';
  * }
  * ```
  *
- * @param requestBodySpec The complete requestBody Object or partial of it.
+ * @param requestBodySpec - The complete requestBody object or partial of it.
  * "partial" for allowing no `content` in spec, for example:
  * ```
  * @requestBody({description: 'a request body'}) user: User
  * ```
  */
 export function requestBody(requestBodySpec?: Partial<RequestBodyObject>) {
-  return function(target: Object, member: string, index: number) {
+  return function(target: object, member: string, index: number) {
     debug('@requestBody() on %s.%s', target.constructor.name, member);
     debug('  parameter index: %s', index);
     /* istanbul ignore if */
@@ -140,8 +144,8 @@ export namespace requestBody {
    * }
    * ```
    *
-   * @param properties The requestBody properties other than `content`
-   * @param itemSpec the full item object
+   * @param properties - The requestBody properties other than `content`
+   * @param itemSpec - the full item object
    */
   export const array = function(
     itemSpec: SchemaObject | ReferenceObject,

@@ -9,9 +9,10 @@ import {
   ApplicationMetadataBooter,
   ControllerBooter,
   DataSourceBooter,
+  InterceptorProviderBooter,
+  LifeCycleObserverBooter,
   RepositoryBooter,
   ServiceBooter,
-  LifeCycleObserverBooter,
 } from './booters';
 import {Bootstrapper} from './bootstrapper';
 import {BootBindings} from './keys';
@@ -31,11 +32,12 @@ export class BootComponent implements Component {
     ServiceBooter,
     DataSourceBooter,
     LifeCycleObserverBooter,
+    InterceptorProviderBooter,
   ];
 
   /**
    *
-   * @param app Application instance
+   * @param app - Application instance
    */
   constructor(@inject(CoreBindings.APPLICATION_INSTANCE) app: Application) {
     // Bound as a SINGLETON so it can be cached as it has no state

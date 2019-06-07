@@ -1,5 +1,4 @@
-path = require('path');
-const fs = require('fs');
+const path = require('path');
 const ArtifactGenerator = require('../../lib/artifact-generator');
 const modelMaker = require('../../lib/model-discoverer');
 const debug = require('../../lib/debug')('discover-generator');
@@ -183,10 +182,11 @@ module.exports = class DiscoveryGenerator extends ArtifactGenerator {
    *
    * this will discover every model
    * and put it in artifactInfo.modelDefinitions
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   async getAllModelDefs() {
     this.artifactInfo.modelDefinitions = [];
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.discoveringModels.length; i++) {
       const modelInfo = this.discoveringModels[i];
       debug(`Discovering: ${modelInfo.name}...`);
@@ -211,6 +211,7 @@ module.exports = class DiscoveryGenerator extends ArtifactGenerator {
     // Exit if needed
     if (this.shouldExit()) return false;
 
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this.artifactInfo.modelDefinitions.length; i++) {
       const modelDefinition = this.artifactInfo.modelDefinitions[i];
       Object.entries(modelDefinition.properties).forEach(([k, v]) =>
@@ -219,9 +220,12 @@ module.exports = class DiscoveryGenerator extends ArtifactGenerator {
       modelDefinition.isModelBaseBuiltin = true;
       modelDefinition.modelBaseClass = 'Entity';
       modelDefinition.className = utils.pascalCase(modelDefinition.name);
-      // These last two are so that the templat doesn't error out of they aren't there
+      // These last two are so that the template doesn't error out if they aren't there
       modelDefinition.allowAdditionalProperties = true;
-      modelDefinition.modelSettings = modelDefinition.settings || {};
+      // modelDefinition.modelSettings = modelDefinition.settings || {};
+      modelDefinition.modelSettings = utils.stringifyModelSettings(
+        modelDefinition.settings || {},
+      );
       debug(`Generating: ${modelDefinition.name}`);
 
       const fullPath = path.resolve(

@@ -7,6 +7,7 @@ import {expect} from '@loopback/testlab';
 import {
   Binding,
   BindingScope,
+  compareBindingsByTag,
   Context,
   ContextView,
   createViewGetter,
@@ -26,6 +27,15 @@ describe('ContextView', () => {
     expect(taggedAsFoo.bindings).to.eql(bindings);
   });
 
+  it('sorts matched bindings', () => {
+    const view = new ContextView(
+      server,
+      filterByTag('foo'),
+      compareBindingsByTag('phase', ['b', 'a']),
+    );
+    expect(view.bindings).to.eql([bindings[1], bindings[0]]);
+  });
+
   it('resolves bindings', async () => {
     expect(await taggedAsFoo.resolve()).to.eql(['BAR', 'FOO']);
     expect(await taggedAsFoo.values()).to.eql(['BAR', 'FOO']);
@@ -33,6 +43,17 @@ describe('ContextView', () => {
 
   it('resolves bindings as a getter', async () => {
     expect(await taggedAsFoo.asGetter()()).to.eql(['BAR', 'FOO']);
+  });
+
+  it('reports error on singleValue() if multiple values exist', async () => {
+    return expect(taggedAsFoo.singleValue()).to.be.rejectedWith(
+      /The ContextView has more than one value\. Use values\(\) to access them\./,
+    );
+  });
+
+  it('supports singleValue() if only one value exist', async () => {
+    server.unbind('bar');
+    expect(await taggedAsFoo.singleValue()).to.eql('FOO');
   });
 
   it('reloads bindings after refresh', async () => {
@@ -154,6 +175,22 @@ describe('ContextView', () => {
         .tag('foo');
       expect(await getter()).to.eql(['BAR', 'XYZ', 'FOO']);
     });
+
+    it('creates a getter function for the binding filter and comparator', async () => {
+      const getter = createViewGetter(server, filterByTag('foo'), (a, b) => {
+        return a.key.localeCompare(b.key);
+      });
+      expect(await getter()).to.eql(['BAR', 'FOO']);
+      server
+        .bind('abc')
+        .to('ABC')
+        .tag('abc');
+      server
+        .bind('xyz')
+        .to('XYZ')
+        .tag('foo');
+      expect(await getter()).to.eql(['BAR', 'FOO', 'XYZ']);
+    });
   });
 
   function givenContextView() {
@@ -169,14 +206,14 @@ describe('ContextView', () => {
       server
         .bind('bar')
         .toDynamicValue(() => Promise.resolve('BAR'))
-        .tag('foo', 'bar')
+        .tag('foo', 'bar', {phase: 'a'})
         .inScope(BindingScope.SINGLETON),
     );
     bindings.push(
       app
         .bind('foo')
         .to('FOO')
-        .tag('foo', 'bar'),
+        .tag('foo', 'bar', {phase: 'b'}),
     );
   }
 });

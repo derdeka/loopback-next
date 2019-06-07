@@ -10,15 +10,15 @@ import {HasOneDefinition, RelationType} from '../relation.types';
 /*
  * Decorator for hasOne
  * infers foreign key name from target model name unless explicitly specified
- * @param targetResolver Target model for hasOne relation
- * @param definition Optional metadata for setting up hasOne relation
- * @returns {(target:any, key:string)}
+ * @param targetResolver - Target model for hasOne relation
+ * @param definition - Optional metadata for setting up hasOne relation
+ * @returns A property decorator
  */
 export function hasOne<T extends Entity>(
   targetResolver: EntityResolver<T>,
   definition?: Partial<HasOneDefinition>,
 ) {
-  return function(decoratedTarget: Object, key: string) {
+  return function(decoratedTarget: object, key: string) {
     // property.array(targetResolver)(decoratedTarget, key);
 
     const meta: HasOneDefinition = Object.assign(

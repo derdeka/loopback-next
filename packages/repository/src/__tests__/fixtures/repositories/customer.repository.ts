@@ -6,14 +6,15 @@
 import { Getter, inject } from '@loopback/context';
 import { BelongsToAccessor, DefaultCrudRepository, HasManyRepositoryFactory, HasManyThroughRepositoryFactory, juggler, repository } from '../../..';
 import { HasOneRepositoryFactory } from '../../../';
-import { Address, Customer, Order, Seller } from '../models';
+import { Address, Customer, CustomerRelations, Order, Seller } from '../models';
 import { AddressRepository } from './address.repository';
 import { OrderRepository } from './order.repository';
 import { SellerRepository } from './seller.repository';
 
 export class CustomerRepository extends DefaultCrudRepository<
   Customer,
-  typeof Customer.prototype.id
+  typeof Customer.prototype.id,
+  CustomerRelations
 > {
   public readonly orders: HasManyRepositoryFactory<
     Order,

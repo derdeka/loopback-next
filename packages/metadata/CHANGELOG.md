@@ -3,6 +3,92 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.2.0...@loopback/metadata@1.2.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+# [1.2.0](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.7...@loopback/metadata@1.2.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.1.7](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.6...@loopback/metadata@1.1.7) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.6](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.5...@loopback/metadata@1.1.6) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.5](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.4...@loopback/metadata@1.1.5) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.4](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.3...@loopback/metadata@1.1.4) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.3](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.2...@loopback/metadata@1.1.3) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.2](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.1...@loopback/metadata@1.1.2) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+## [1.1.1](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.1.0...@loopback/metadata@1.1.1) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/metadata
+
+
+
+
+
+# [1.1.0](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.0.13...@loopback/metadata@1.1.0) (2019-04-20)
+
+
+### Features
+
+* **metadata:** support symbols used as property/method keys ([9e7ea17](https://github.com/strongloop/loopback-next/commit/9e7ea17))
+
+
+
+
+
 ## [1.0.13](https://github.com/strongloop/loopback-next/compare/@loopback/metadata@1.0.12...@loopback/metadata@1.0.13) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/metadata

@@ -27,6 +27,7 @@ const props = {
 
 describe('openapi-generator specific files', function() {
   // These tests take longer to execute, they used to time out on Travis CI
+  // eslint-disable-next-line no-invalid-this
   this.timeout(10000);
 
   const index = path.resolve(SANDBOX_PATH, 'src/controllers/index.ts');
@@ -71,12 +72,9 @@ describe('openapi-generator specific files', function() {
     assert.file(newPetModel);
     assert.fileContent(newPetModel, `export class NewPet {`);
     assert.fileContent(newPetModel, `@model({name: 'NewPet'})`);
-    assert.fileContent(
-      newPetModel,
-      `@property({name: 'name', required: true})`,
-    );
+    assert.fileContent(newPetModel, `@property({required: true})`);
     assert.fileContent(newPetModel, `name: string;`);
-    assert.fileContent(newPetModel, `@property({name: 'tag'})`);
+    assert.fileContent(newPetModel, `@property()`);
     assert.fileContent(newPetModel, `tag?: string`);
     assert.file(errorModel);
   });

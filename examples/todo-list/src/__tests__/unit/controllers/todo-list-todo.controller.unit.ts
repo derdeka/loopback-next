@@ -4,6 +4,7 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {
+  Count,
   DefaultHasManyRepository,
   HasManyRepository,
 } from '@loopback/repository';
@@ -24,6 +25,7 @@ describe('TodoController', () => {
     HasManyRepository<Todo>
   >;
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   /*
   =============================================================================
   REPOSITORY FACTORY STUB
@@ -32,7 +34,7 @@ describe('TodoController', () => {
   in our tests themselves.
   =============================================================================
    */
-  let todos: sinon.SinonStub;
+  let todos: sinon.SinonStub<any[], Todo[]>;
 
   /*
   =============================================================================
@@ -42,10 +44,11 @@ describe('TodoController', () => {
   in our tests themselves.
   =============================================================================
    */
-  let create: sinon.SinonStub;
-  let find: sinon.SinonStub;
-  let patch: sinon.SinonStub;
-  let del: sinon.SinonStub;
+  let create: sinon.SinonStub<any[], Promise<Todo>>;
+  let find: sinon.SinonStub<any[], Promise<Todo[]>>;
+  let patch: sinon.SinonStub<any[], Promise<Count>>;
+  let del: sinon.SinonStub<any[], Promise<Count>>;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   /*
   =============================================================================
@@ -98,22 +101,22 @@ describe('TodoController', () => {
 
   describe('patch()', () => {
     it('returns a number of todos updated', async () => {
-      patch.resolves([aChangedTodo].length);
+      patch.resolves({count: [aChangedTodo].length});
       const where = {title: aTodoWithId.title};
       expect(
         await controller.patch(aTodoListWithId.id!, aTodoToPatchTo, where),
-      ).to.eql(1);
+      ).to.eql({count: 1});
       sinon.assert.calledWith(todos, aTodoListWithId.id!);
       sinon.assert.calledWith(patch, aTodoToPatchTo, where);
     });
   });
 
   describe('deleteAll()', () => {
-    it('successfully deletes existing items', async () => {
-      del.resolves(aListOfTodos.length);
-      expect(await controller.delete(aTodoListWithId.id!)).to.eql(
-        aListOfTodos.length,
-      );
+    it('returns a number of todos deleted', async () => {
+      del.resolves({count: aListOfTodos.length});
+      expect(await controller.delete(aTodoListWithId.id!)).to.eql({
+        count: aListOfTodos.length,
+      });
       sinon.assert.calledWith(todos, aTodoListWithId.id!);
       sinon.assert.called(del);
     });
@@ -151,11 +154,12 @@ describe('TodoController', () => {
       .withArgs(aTodoListWithId.id!)
       .returns(constrainedTodoRepo);
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (todoListRepo as any).todos = todos;
 
     // Setup CRUD fakes
-    ({create, find, patch, delete: del} = constrainedTodoRepo.stubs);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({create, find, patch, delete: del} = constrainedTodoRepo.stubs as any);
 
     controller = new TodoListTodoController(todoListRepo);
   }

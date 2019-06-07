@@ -38,7 +38,6 @@ export type NodeWithValue<T> = Node<T> & {value: T};
 
 export interface ResolvedNode<T> {
   node: Node<T>;
-  // tslint:disable-next-line:no-any
   params?: PathParameterValues;
 }
 
@@ -51,8 +50,8 @@ export class Trie<T> {
 
   /**
    * Create a node for a given path template
-   * @param pathTemplate The path template,
-   * @param value Value of the route
+   * @param pathTemplate - The path template,
+   * @param value - Value of the route
    */
   create(routeTemplate: string, value: T) {
     const keys = routeTemplate.split('/').filter(Boolean);
@@ -61,7 +60,7 @@ export class Trie<T> {
 
   /**
    * Match a route path against the trie
-   * @param path The route path, such as `/customers/c01`
+   * @param path - The route path, such as `/customers/c01`
    */
   match(
     path: string,
@@ -94,8 +93,8 @@ function isNodeWithValue<T>(node: Node<T>): node is NodeWithValue<T> {
 
 /**
  * Use depth-first preorder traversal to list all nodes with values
- * @param root Root node
- * @param visitor A function to process nodes with values
+ * @param root - Root node
+ * @param visitor - A function to process nodes with values
  */
 function traverse<T>(root: Node<T>, visitor: (node: NodeWithValue<T>) => void) {
   if (isNodeWithValue(root)) visitor(root);
@@ -106,8 +105,8 @@ function traverse<T>(root: Node<T>, visitor: (node: NodeWithValue<T>) => void) {
 
 /**
  * Match the given key to one or more children of the parent node
- * @param key Key
- * @param parent Parent node
+ * @param key - Key
+ * @param parent - Parent node
  */
 function matchChildren<T>(key: string, parent: Node<T>): ResolvedNode<T>[] {
   const resolvedNodes: ResolvedNode<T>[] = [];
@@ -140,15 +139,15 @@ function matchChildren<T>(key: string, parent: Node<T>): ResolvedNode<T>[] {
 
 /**
  * Search a sub list of keys against the parent node
- * @param keys An array of keys
- * @param index Starting index of the key list
- * @param params An object to receive resolved parameter values
- * @param parent Parent node
+ * @param keys - An array of keys
+ * @param index - Starting index of the key list
+ * @param params - An object to receive resolved parameter values
+ * @param parent - Parent node
  */
 function search<T>(
   keys: string[],
   index: number,
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: {[name: string]: any},
   parent: Node<T>,
 ): ResolvedNode<T> | undefined {
@@ -172,10 +171,10 @@ function search<T>(
 
 /**
  * Create a node for a sub list of keys against the parent node
- * @param keys An array of keys
- * @param index Starting index of the key list
- * @param value Value of the node
- * @param parent Parent node
+ * @param keys - An array of keys
+ * @param index - Starting index of the key list
+ * @param value - Value of the node
+ * @param parent - Parent node
  */
 function createNode<T>(
   keys: string[],

@@ -17,10 +17,10 @@ async function discoverModelNames(ds, options) {
 
 /**
  * Returns the schema definition for a model
- * @param ds {Juggler.DataSource}
- * @param modelName {string}
- * @param options {object}
- * @return {Promise<Juggler.SchemaDefinition>}
+ * @param ds - {Juggler.DataSource}
+ * @param modelName - {string}
+ * @param options - {object}
+ * @returns {Promise<Juggler.SchemaDefinition>}
  */
 async function discoverSingleModel(ds, modelName, options) {
   const schema = await ds.discoverSchema(modelName, options);
@@ -34,11 +34,11 @@ async function discoverSingleModel(ds, modelName, options) {
  * Loads a DataSource from a file
  * If the path provided is a JSON, it instantiates a juggler.DataSource with the config as the only argument
  * Else it requires it like a compiled loopback datasource
- * @param path
+ * @param modulePath
  * @returns juggler.DataSource
  */
-function loadDataSource(path) {
-  const ds = require(path);
+function loadDataSource(modulePath) {
+  const ds = require(modulePath);
   const key = Object.keys(ds)[0];
   const val = new ds[key]();
   return val;
@@ -46,7 +46,7 @@ function loadDataSource(path) {
 
 /**
  * Loads a compiled loopback datasource by name
- * @param name {string}
+ * @param name - {string}
  * @returns {*}
  */
 function loadDataSourceByName(name) {
@@ -54,6 +54,7 @@ function loadDataSourceByName(name) {
   const dataSourceFiles = getAllDataSourceFiles();
   debug(`Loaded ${dataSourceFiles.length} dataSource files`);
 
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < dataSourceFiles.length; i++) {
     const f = dataSourceFiles[i];
     const ds = loadDataSource(path.resolve(DEFAULT_DATASOURCE_DIRECTORY, f));

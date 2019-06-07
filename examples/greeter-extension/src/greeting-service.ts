@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Getter} from '@loopback/context';
+import {config, Getter} from '@loopback/context';
+import {extensionPoint, extensions} from '@loopback/core';
 import chalk from 'chalk';
-import {configuration, extensionPoint, extensions} from './decorators';
 import {Greeter, GREETER_EXTENSION_POINT_NAME} from './types';
 
 /**
@@ -23,21 +23,21 @@ export class GreetingService {
   constructor(
     /**
      * Inject a getter function to fetch greeters (bindings tagged with
-     * `{extensionPoint: GREETER_EXTENSION_POINT_NAME}`)
+     * `{[CoreTags.EXTENSION_POINT]: GREETER_EXTENSION_POINT_NAME}`)
      */
-    @extensions() // Sugar for @inject.getter(filterByTag({extensionPoint: GREETER_EXTENSION_POINT_NAME}))
+    @extensions()
     private getGreeters: Getter<Greeter[]>,
     /**
      * An extension point should be able to receive its options via dependency
      * injection.
      */
-    @configuration() // Sugar for @inject('services.GreetingService.options', {optional: true})
+    @config() // Sugar for @inject('services.GreetingService.options', {optional: true})
     public readonly options?: GreetingServiceOptions,
   ) {}
 
   /**
    * Find a greeter that can speak the given language
-   * @param language Language code for the greeting
+   * @param language - Language code for the greeting
    */
   async findGreeter(language: string): Promise<Greeter | undefined> {
     // Get the latest list of greeters
@@ -48,18 +48,18 @@ export class GreetingService {
 
   /**
    * Greet in the given language
-   * @param language Language code
-   * @param name Name
+   * @param language - Language code
+   * @param name - Name
    */
   async greet(language: string, name: string): Promise<string> {
-    let greeting: string = '';
+    let greeting = '';
 
     const greeter = await this.findGreeter(language);
     if (greeter) {
       greeting = greeter.greet(name);
     } else {
       // Fall back to English
-      greeting = `Hello, ${name}`;
+      greeting = `Hello, ${name}!`;
     }
     if (this.options && this.options.color) {
       greeting = chalk.keyword(this.options.color)(greeting);

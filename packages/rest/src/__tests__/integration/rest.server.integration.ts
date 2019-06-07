@@ -10,7 +10,7 @@ import {
   expect,
   givenHttpServerConfig,
   httpsGetAsync,
-  itSkippedOnTravis,
+  skipOnTravis,
   supertest,
 } from '@loopback/testlab';
 import * as fs from 'fs';
@@ -530,6 +530,7 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
     expect(response.get('Access-Control-Allow-Origin')).to.equal('*');
     expect(response.get('Access-Control-Allow-Credentials')).to.equal('true');
@@ -640,6 +641,7 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
   });
 
@@ -663,6 +665,7 @@ paths:
         '\\?url=http://\\d+.\\d+.\\d+.\\d+:\\d+/openapi.json',
       ].join(''),
     );
+    expect(response.status).to.equal(302);
     expect(response.get('Location')).match(expectedUrl);
   });
 
@@ -702,7 +705,7 @@ paths:
     await server.stop();
   });
 
-  itSkippedOnTravis('handles IPv6 loopback address in HTTPS', async () => {
+  skipOnTravis(it, 'handles IPv6 loopback address in HTTPS', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
     const server = await givenAServer({
@@ -723,7 +726,7 @@ paths:
   });
 
   // https://github.com/strongloop/loopback-next/issues/1623
-  itSkippedOnTravis('handles IPv6 address for API Explorer UI', async () => {
+  skipOnTravis(it, 'handles IPv6 address for API Explorer UI', async () => {
     const keyPath = path.join(FIXTURES, 'key.pem');
     const certPath = path.join(FIXTURES, 'cert.pem');
     const server = await givenAServer({

@@ -15,15 +15,15 @@ import {
  * Decorator for hasMany
  * Calls property.array decorator underneath the hood and infers foreign key
  * name from target model name unless explicitly specified
- * @param targetResolver Target model for hasMany relation
- * @param definition Optional metadata for setting up hasMany relation
- * @returns {(target:any, key:string)}
+ * @param targetResolver - Target model for hasMany relation
+ * @param definition - Optional metadata for setting up hasMany relation
+ * @returns A property decorator
  */
 export function hasMany<T extends Entity>(
   targetResolver: EntityResolver<T>,
   definition?: Partial<HasManyDefinition | HasManyThroughDefinition>,
 ) {
-  return function(decoratedTarget: Object, key: string) {
+  return function(decoratedTarget: object, key: string) {
     const meta: HasManyDefinition = Object.assign(
       // default values, can be customized by the caller
       {name: key},

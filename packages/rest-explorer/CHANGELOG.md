@@ -3,6 +3,100 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.2.0...@loopback/rest-explorer@1.2.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+# [1.2.0](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.25...@loopback/rest-explorer@1.2.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.1.25](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.24...@loopback/rest-explorer@1.1.25) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.24](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.23...@loopback/rest-explorer@1.1.24) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.23](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.22...@loopback/rest-explorer@1.1.23) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.22](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.21...@loopback/rest-explorer@1.1.22) (2019-05-14)
+
+
+### Bug Fixes
+
+* **rest-explorer:** exclude basePath from /openapi URL ([960518e](https://github.com/strongloop/loopback-next/commit/960518e))
+
+
+
+
+
+## [1.1.21](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.20...@loopback/rest-explorer@1.1.21) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.20](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.19...@loopback/rest-explorer@1.1.20) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.19](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.18...@loopback/rest-explorer@1.1.19) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.18](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.17...@loopback/rest-explorer@1.1.18) (2019-04-26)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
+## [1.1.17](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.16...@loopback/rest-explorer@1.1.17) (2019-04-20)
+
+**Note:** Version bump only for package @loopback/rest-explorer
+
+
+
+
+
 ## [1.1.16](https://github.com/strongloop/loopback-next/compare/@loopback/rest-explorer@1.1.15...@loopback/rest-explorer@1.1.16) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/rest-explorer

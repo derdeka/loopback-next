@@ -7,7 +7,12 @@ import {Context} from '@loopback/context';
 import {anOpenApiSpec, anOperationSpec} from '@loopback/openapi-spec-builder';
 import {ControllerSpec, get} from '@loopback/openapi-v3';
 import {ParameterObject, RequestBodyObject} from '@loopback/openapi-v3-types';
-import {Client, createClientForHandler, expect} from '@loopback/testlab';
+import {
+  Client,
+  createClientForHandler,
+  createUnexpectedHttpErrorLogger,
+  expect,
+} from '@loopback/testlab';
 import * as express from 'express';
 import * as HttpErrors from 'http-errors';
 import {is} from 'type-is';
@@ -30,7 +35,7 @@ import {
   UrlEncodedBodyParser,
   writeResultToResponse,
 } from '../..';
-import {createUnexpectedHttpErrorLogger, aRestServerConfig} from '../helpers';
+import {aRestServerConfig} from '../helpers';
 
 const SequenceActions = RestBindings.SequenceActions;
 
@@ -439,7 +444,7 @@ describe('HttpHandler', () => {
         .build();
 
       class RouteParamController {
-        async showBody(data: Object): Promise<Object> {
+        async showBody(data: object): Promise<object> {
           bodyParamControllerInvoked = true;
           return data;
         }
@@ -461,7 +466,7 @@ describe('HttpHandler', () => {
         .build();
 
       class TestController {
-        public async getObject(): Promise<Object> {
+        public async getObject(): Promise<object> {
           return {key: 'value'};
         }
       }
@@ -663,8 +668,8 @@ describe('HttpHandler', () => {
   }
 
   function givenControllerClass(
-    // tslint:disable-next-line:no-any
-    ctor: new (...args: any[]) => Object,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ctor: new (...args: any[]) => object,
     spec: ControllerSpec,
   ) {
     handler.registerController(spec, ctor);

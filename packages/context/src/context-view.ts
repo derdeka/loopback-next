@@ -8,6 +8,7 @@ import {EventEmitter} from 'events';
 import {promisify} from 'util';
 import {Binding} from './binding';
 import {BindingFilter} from './binding-filter';
+import {BindingComparator} from './binding-sorter';
 import {Context} from './context';
 import {
   ContextEventType,
@@ -42,7 +43,8 @@ export class ContextView<T = unknown> extends EventEmitter
 
   constructor(
     protected readonly context: Context,
-    public readonly filter: BindingFilter<T>,
+    public readonly filter: BindingFilter,
+    public readonly comparator?: BindingComparator,
   ) {
     super();
   }
@@ -85,10 +87,14 @@ export class ContextView<T = unknown> extends EventEmitter
   /**
    * Find matching bindings and refresh the cache
    */
-  protected findBindings() {
+  protected findBindings(): Readonly<Binding<T>>[] {
     debug('Finding matching bindings');
-    this._cachedBindings = this.context.find(this.filter);
-    return this._cachedBindings;
+    const found = this.context.find(this.filter);
+    if (typeof this.comparator === 'function') {
+      found.sort(this.comparator);
+    }
+    this._cachedBindings = found;
+    return found;
   }
 
   /**
@@ -110,7 +116,7 @@ export class ContextView<T = unknown> extends EventEmitter
 
   /**
    * Resolve values for the matching bindings
-   * @param session Resolution session
+   * @param session - Resolution session
    */
   resolve(session?: ResolutionSession): ValueOrPromise<T[]> {
     debug('Resolving values');
@@ -151,20 +157,69 @@ export class ContextView<T = unknown> extends EventEmitter
   asGetter(session?: ResolutionSession): Getter<T[]> {
     return () => this.values(session);
   }
+
+  /**
+   * Get the single value
+   */
+  async singleValue(session?: ResolutionSession): Promise<T | undefined> {
+    const values = await this.values(session);
+    if (values.length === 0) return undefined;
+    if (values.length === 1) return values[0];
+    throw new Error(
+      'The ContextView has more than one value. Use values() to access them.',
+    );
+  }
 }
 
 /**
- * Create a context view as a getter
- * @param ctx Context object
- * @param bindingFilter A function to match bindings
- * @param session Resolution session
+ * Create a context view as a getter with the given filter
+ * @param ctx - Context object
+ * @param bindingFilter - A function to match bindings
+ * @param session - Resolution session
  */
 export function createViewGetter<T = unknown>(
   ctx: Context,
-  bindingFilter: BindingFilter<T>,
+  bindingFilter: BindingFilter,
+  session?: ResolutionSession,
+): Getter<T[]>;
+
+/**
+ * Create a context view as a getter with the given filter and sort matched
+ * bindings by the comparator.
+ * @param ctx - Context object
+ * @param bindingFilter - A function to match bindings
+ * @param bindingComparator - A function to compare two bindings
+ * @param session - Resolution session
+ */
+export function createViewGetter<T = unknown>(
+  ctx: Context,
+  bindingFilter: BindingFilter,
+  bindingComparator?: BindingComparator,
+  session?: ResolutionSession,
+): Getter<T[]>;
+
+/**
+ * Create a context view as a getter
+ * @param ctx - Context object
+ * @param bindingFilter - A function to match bindings
+ * @param bindingComparatorOrSession - A function to sort matched bindings or
+ * resolution session if the comparator is not needed
+ * @param session - Resolution session if the comparator is provided
+ */
+export function createViewGetter<T = unknown>(
+  ctx: Context,
+  bindingFilter: BindingFilter,
+  bindingComparatorOrSession?: BindingComparator | ResolutionSession,
   session?: ResolutionSession,
 ): Getter<T[]> {
-  const view = new ContextView(ctx, bindingFilter);
+  let bindingComparator: BindingComparator | undefined = undefined;
+  if (typeof bindingComparatorOrSession === 'function') {
+    bindingComparator = bindingComparatorOrSession;
+  } else if (bindingComparatorOrSession instanceof ResolutionSession) {
+    session = bindingComparatorOrSession;
+  }
+
+  const view = new ContextView<T>(ctx, bindingFilter, bindingComparator);
   view.open();
   return view.asGetter(session);
 }

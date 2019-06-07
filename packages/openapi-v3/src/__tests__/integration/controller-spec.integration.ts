@@ -3,16 +3,22 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {ParameterObject, SchemaObject} from '@loopback/openapi-v3-types';
-import {model, property} from '@loopback/repository';
+import {
+  OperationObject,
+  ParameterObject,
+  SchemaObject,
+} from '@loopback/openapi-v3-types';
+import {Entity, model, property} from '@loopback/repository';
 import {expect} from '@loopback/testlab';
 import {
+  api,
   ControllerSpec,
   get,
   getControllerSpec,
   param,
   post,
   requestBody,
+  getModelSchemaRef,
 } from '../..';
 
 describe('controller spec', () => {
@@ -200,6 +206,313 @@ describe('controller spec', () => {
       '200': {
         description: 'hello world',
       },
+    });
+  });
+
+  context('reference models via spec', () => {
+    it('allows operations to provide definitions of referenced models through #/components/schema', () => {
+      class MyController {
+        @get('/todos', {
+          responses: {
+            '200': {
+              description: 'Array of Category model instances',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Todo',
+                    definitions: {
+                      Todo: {
+                        title: 'Todo',
+                        properties: {
+                          title: {type: 'string'},
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/todos'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/components/schemas/Todo',
+      });
+
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.deepEqual({
+        Todo: {
+          title: 'Todo',
+          properties: {
+            title: {
+              type: 'string',
+            },
+          },
+        },
+      });
+    });
+
+    it('allows operations to provide definitions of referenced models through #/definitions', () => {
+      class MyController {
+        @get('/todos', {
+          responses: {
+            '200': {
+              description: 'Array of Category model instances',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/definitions/Todo',
+                    definitions: {
+                      Todo: {
+                        title: 'Todo',
+                        properties: {
+                          title: {type: 'string'},
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/todos'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/definitions/Todo',
+      });
+
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.deepEqual({
+        Todo: {
+          title: 'Todo',
+          properties: {
+            title: {
+              type: 'string',
+            },
+          },
+        },
+      });
+    });
+
+    it('allows operations to get definitions of models when defined through a different method', async () => {
+      @model()
+      class Todo extends Entity {
+        @property({
+          type: 'string',
+          required: true,
+        })
+        title: string;
+      }
+
+      class MyController {
+        @get('/todos', {
+          responses: {
+            '200': {
+              description: 'Array of Category model instances',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/definitions/Todo',
+                    definitions: {
+                      Todo: {
+                        title: 'Todo',
+                        properties: {
+                          title: {type: 'string'},
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+
+        @get('/todos/{id}', {
+          responses: {
+            '200': {
+              content: {
+                'application/json': {
+                  schema: {$ref: '#/components/schemas/Todo'},
+                },
+              },
+            },
+          },
+        })
+        async findById(): Promise<Todo> {
+          return new Todo();
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/todos/{id}'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/components/schemas/Todo',
+      });
+
+      const controller = new MyController();
+      const todo = await controller.findById();
+      expect(todo instanceof Todo).to.be.true();
+    });
+
+    it('returns undefined when it cannot find definition of referenced model', () => {
+      class MyController {
+        @get('/todos', {
+          responses: {
+            '200': {
+              description: 'Array of Category model instances',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/definitions/Todo',
+                  },
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.be.undefined();
+    });
+
+    it('gets definition from outside the method decorator when it is not provided', () => {
+      @api({
+        paths: {},
+        components: {
+          schemas: {
+            Todo: {
+              title: 'Todo',
+              properties: {
+                title: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      })
+      class MyController {
+        @get('/todos', {
+          responses: {
+            '200': {
+              description: 'Array of Category model instances',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/definitions/Todo',
+                  },
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/todos'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/definitions/Todo',
+      });
+
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.deepEqual({
+        Todo: {
+          title: 'Todo',
+          properties: {
+            title: {
+              type: 'string',
+            },
+          },
+        },
+      });
+    });
+
+    it('allows a class to reference schemas at @api level', () => {
+      @api({
+        paths: {
+          '/todos': {
+            get: {
+              'x-operation-name': 'find',
+              'x-controller-name': 'MyController',
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        $ref: '#/components/schemas/Todo',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            Todo: {
+              title: 'Todo',
+              properties: {
+                title: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      })
+      class MyController {
+        async find(): Promise<object[]> {
+          return []; // dummy implementation, it's never called
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/todos'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/components/schemas/Todo',
+      });
+
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.deepEqual({
+        Todo: {
+          title: 'Todo',
+          properties: {
+            title: {
+              type: 'string',
+            },
+          },
+        },
+      });
     });
   });
 
@@ -420,5 +733,52 @@ describe('controller spec', () => {
       }
       return MyController;
     }
+  });
+
+  describe('getModelSchemaRef', () => {
+    it('creates spec referencing shared model schema', () => {
+      @model()
+      class MyModel {
+        @property()
+        name: string;
+      }
+
+      class MyController {
+        @get('/my', {
+          responses: {
+            '200': {
+              description: 'Array of MyModel model instances',
+              content: {
+                'application/json': {
+                  schema: getModelSchemaRef(MyModel),
+                },
+              },
+            },
+          },
+        })
+        async find(): Promise<MyModel[]> {
+          return [];
+        }
+      }
+
+      const spec = getControllerSpec(MyController);
+      const opSpec: OperationObject = spec.paths['/my'].get;
+      const responseSpec = opSpec.responses['200'].content['application/json'];
+      expect(responseSpec.schema).to.deepEqual({
+        $ref: '#/components/schemas/MyModel',
+      });
+
+      const globalSchemas = (spec.components || {}).schemas;
+      expect(globalSchemas).to.deepEqual({
+        MyModel: {
+          title: 'MyModel',
+          properties: {
+            name: {
+              type: 'string',
+            },
+          },
+        },
+      });
+    });
   });
 });

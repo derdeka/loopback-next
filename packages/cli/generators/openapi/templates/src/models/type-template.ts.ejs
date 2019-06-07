@@ -1,4 +1,4 @@
-/* tslint:disable:no-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 <%_
 imports.forEach(i => {
 -%>
@@ -8,6 +8,7 @@ imports.forEach(i => {
 -%>
 /**
  * The model type is generated from OpenAPI schema - <%- name %>
+ * <%- escapeComment(description) %>
  */
 export type <%- className %> = <%- declaration %>;
 

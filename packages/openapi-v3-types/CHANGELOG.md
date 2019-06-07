@@ -3,6 +3,89 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.1.0...@loopback/openapi-v3-types@1.1.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+# [1.1.0](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.21...@loopback/openapi-v3-types@1.1.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.0.21](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.20...@loopback/openapi-v3-types@1.0.21) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.20](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.19...@loopback/openapi-v3-types@1.0.20) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.19](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.18...@loopback/openapi-v3-types@1.0.19) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.18](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.17...@loopback/openapi-v3-types@1.0.18) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.17](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.16...@loopback/openapi-v3-types@1.0.17) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.16](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.15...@loopback/openapi-v3-types@1.0.16) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.15](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.14...@loopback/openapi-v3-types@1.0.15) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
+## [1.0.14](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.13...@loopback/openapi-v3-types@1.0.14) (2019-04-20)
+
+**Note:** Version bump only for package @loopback/openapi-v3-types
+
+
+
+
+
 ## [1.0.13](https://github.com/strongloop/loopback-next/compare/@loopback/openapi-v3-types@1.0.12...@loopback/openapi-v3-types@1.0.13) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/openapi-v3-types

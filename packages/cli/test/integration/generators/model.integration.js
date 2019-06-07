@@ -192,13 +192,41 @@ describe('lb4 model integration', () => {
       );
       assert.fileContent(
         expectedModelFile,
-        /@model\({settings: {"strict":false}}\)/,
+        /@model\({settings: {strict: false}}\)/,
       );
       assert.fileContent(
         expectedModelFile,
         /export class Test extends Entity {/,
       );
       assert.fileContent(expectedModelFile, /\[prop: string\]: any;/);
+    });
+
+    it('scaffolds empty model relation interface and relation type', async () => {
+      await testUtils
+        .executeGenerator(generator)
+        .inDir(SANDBOX_PATH, () => testUtils.givenLBProject(SANDBOX_PATH))
+        .withPrompts({
+          name: 'test',
+          propName: null,
+          modelBaseClass: 'Entity',
+          allowAdditionalProperties: false,
+        });
+
+      assert.file(expectedModelFile);
+      assert.file(expectedIndexFile);
+
+      assert.fileContent(
+        expectedModelFile,
+        /import {Entity, model, property} from '@loopback\/repository';/,
+      );
+      assert.fileContent(
+        expectedModelFile,
+        /export type TestWithRelations = Test & TestRelations;/,
+      );
+      assert.fileContent(
+        expectedModelFile,
+        /export interface TestRelations {\n {2}\/\/ describe navigational properties here\n}/,
+      );
     });
 
     it('scaffolds correct files with args', async () => {
@@ -236,5 +264,29 @@ describe('model generator using --config option', () => {
           '--yes',
         ]),
     ).to.be.rejectedWith(/Model was not found in/);
+  });
+
+  describe('model generator using --config option with model settings', () => {
+    it('creates a model with valid settings', async () => {
+      await testUtils
+        .executeGenerator(generator)
+        .inDir(SANDBOX_PATH, () => testUtils.givenLBProject(SANDBOX_PATH))
+        .withArguments([
+          '--config',
+          '{"name":"test", "base":"Entity", \
+          "modelSettings": {"annotations": \
+          [{"destinationClass": "class1","argument": 0}],\
+          "foreignKeys": {"fk_destination": {"name": "fk_destination"}}},\
+          "allowAdditionalProperties":true}',
+          '--yes',
+        ]);
+
+      basicModelFileChecks(expectedModelFile, expectedIndexFile);
+
+      assert.fileContent(
+        expectedModelFile,
+        /@model\({\n {2}settings: {\n {4}annotations: \[{destinationClass: 'class1', argument: 0}],\n {4}foreignKeys: {fk_destination: {name: 'fk_destination'}},\n {4}strict: false\n {2}}\n}\)/,
+      );
+    });
   });
 });

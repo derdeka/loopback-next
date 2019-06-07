@@ -5,14 +5,15 @@
 
 import {expect} from '@loopback/testlab';
 import {
-  inject,
+  Constructor,
   describeInjectedArguments,
   describeInjectedProperties,
+  inject,
 } from '../..';
 
 describe('function argument injection', () => {
   it('can decorate class constructor arguments', () => {
-    // tslint:disable-next-line:no-unused
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class TestClass {
       constructor(@inject('foo') foo: string) {}
     }
@@ -29,7 +30,6 @@ describe('function argument injection', () => {
   });
 
   it('can retrieve information about injected method arguments', () => {
-    // tslint:disable-next-line:no-unused
     class TestClass {
       test(@inject('foo') foo: string) {}
     }
@@ -93,11 +93,49 @@ describe('function argument injection', () => {
     const meta = describeInjectedArguments(SubTestClass);
     expect(meta.map(m => m.bindingSelector)).to.deepEqual([]);
   });
+
+  // https://github.com/strongloop/loopback-next/issues/2946
+  it('allows custom decorator that returns a new constructor', () => {
+    class HelloController {
+      name: string = 'Leonard';
+    }
+
+    const mixinDecorator = () => <C extends Constructor<object>>(
+      baseConstructor: C,
+    ) =>
+      class extends baseConstructor {
+        classProperty = 'a classProperty';
+        classFunction() {
+          return 'a classFunction';
+        }
+      };
+
+    @mixinDecorator()
+    class Test {
+      constructor(@inject('controller') public controller: HelloController) {}
+    }
+
+    // Now the `Test` class looks like the following:
+    /*
+    class extends baseConstructor {
+            constructor() {
+                super(...arguments);
+                this.classProperty = () => 'a classProperty';
+            }
+            classFunction() {
+                return 'a classFunction';
+            }
+        }
+    */
+
+    const meta = describeInjectedArguments(Test);
+    expect(meta.map(m => m.bindingSelector)).to.deepEqual(['controller']);
+  });
 });
 
 describe('property injection', () => {
   it('can decorate properties', () => {
-    // tslint:disable-next-line:no-unused
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     class TestClass {
       @inject('foo')
       foo: string;
@@ -126,7 +164,7 @@ describe('property injection', () => {
 
   it('cannot decorate static properties', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class TestClass {
         @inject('foo')
         static foo: string;
@@ -136,7 +174,7 @@ describe('property injection', () => {
 
   it('cannot decorate a method', () => {
     expect(() => {
-      // tslint:disable-next-line:no-unused
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       class TestClass {
         @inject('bar')
         foo() {}

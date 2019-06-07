@@ -6,7 +6,7 @@
 /**
  * Common types/interfaces such as Class/Constructor/Options/Callback
  */
-// tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Interface for classes with `new` operator and static properties/methods
@@ -19,8 +19,10 @@ export interface Class<T> {
 }
 
 /**
- * Interface for constructor functions without `new` operator, for example,
- * ```
+ * Interface for constructor functions without `new` operator.
+ *
+ * @example
+ * ```ts
  * function Foo(x) {
  *   if (!(this instanceof Foo)) { return new Foo(x); }
  *   this.x = x;
@@ -80,7 +82,6 @@ export type NamedParameters = AnyObject;
 /**
  * Positional parameters, such as [1, 'a']
  */
-// tslint:disable-next-line:no-any
 export type PositionalParameters = any[];
 
 /**

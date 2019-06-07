@@ -3,26 +3,35 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Strategy, AuthenticateOptions} from 'passport';
-import {Request} from 'express';
+import {Request} from '@loopback/rest';
+import {AuthenticationStrategy, UserProfile} from '../../../types';
+
+class AuthenticationError extends Error {
+  statusCode?: number;
+}
 
 /**
  * Test fixture for a mock asynchronous passport-strategy
  */
-export class MockStrategy extends Strategy {
+export class MockStrategy implements AuthenticationStrategy {
+  name: 'MockStrategy';
   // user to return for successful authentication
-  private mockUser: Object;
+  private mockUser: UserProfile;
 
-  setMockUser(userObj: Object) {
+  setMockUser(userObj: UserProfile) {
     this.mockUser = userObj;
+  }
+
+  returnMockUser(): UserProfile {
+    return this.mockUser;
   }
 
   /**
    * authenticate() function similar to passport-strategy packages
    * @param req
    */
-  async authenticate(req: Request, options?: AuthenticateOptions) {
-    await this.verify(req);
+  async authenticate(req: Request): Promise<UserProfile> {
+    return await this.verify(req);
   }
   /**
    * @param req
@@ -39,28 +48,16 @@ export class MockStrategy extends Strategy {
       request.headers.testState &&
       request.headers.testState === 'fail'
     ) {
-      this.returnUnauthorized('authorization failed');
-      return;
+      const err = new AuthenticationError('authorization failed');
+      err.statusCode = 401;
+      throw err;
     } else if (
       request.headers &&
       request.headers.testState &&
       request.headers.testState === 'error'
     ) {
-      this.returnError('unexpected error');
-      return;
+      throw new Error('unexpected error');
     }
-    process.nextTick(this.returnMockUser.bind(this));
-  }
-
-  returnMockUser() {
-    this.success(this.mockUser);
-  }
-
-  returnUnauthorized(challenge?: string | number, status?: number) {
-    this.fail(challenge, status);
-  }
-
-  returnError(err: string) {
-    this.error(err);
+    return this.returnMockUser();
   }
 }

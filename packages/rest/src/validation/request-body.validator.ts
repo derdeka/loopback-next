@@ -4,16 +4,16 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {
+  ReferenceObject,
   RequestBodyObject,
   SchemaObject,
-  ReferenceObject,
   SchemasObject,
 } from '@loopback/openapi-v3-types';
 import * as AJV from 'ajv';
 import * as debugModule from 'debug';
-import * as util from 'util';
-import {HttpErrors, RestHttpErrors, RequestBody} from '..';
 import * as _ from 'lodash';
+import * as util from 'util';
+import {HttpErrors, RequestBody, RestHttpErrors} from '..';
 
 const toJsonSchema = require('openapi-schema-to-json-schema');
 const debug = debugModule('loopback:rest:validation');
@@ -25,9 +25,9 @@ export type RequestBodyValidationOptions = AJV.Options;
  * The JSON schema is generated from the OpenAPI schema which is typically defined
  * by `@requestBody()`.
  * The validation leverages AJV schema validator.
- * @param body The request body parsed from an HTTP request.
- * @param requestBodySpec The OpenAPI requestBody specification defined in `@requestBody()`.
- * @param globalSchemas The referenced schemas generated from `OpenAPISpec.components.schemas`.
+ * @param body - The request body parsed from an HTTP request.
+ * @param requestBodySpec - The OpenAPI requestBody specification defined in `@requestBody()`.
+ * @param globalSchemas - The referenced schemas generated from `OpenAPISpec.components.schemas`.
  */
 export function validateRequestBody(
   body: RequestBody,
@@ -37,7 +37,7 @@ export function validateRequestBody(
 ) {
   const required = requestBodySpec && requestBodySpec.required;
 
-  if (required && body.value == undefined) {
+  if (required && body.value == null) {
     const err = Object.assign(
       new HttpErrors.BadRequest('Request body is required'),
       {
@@ -61,7 +61,7 @@ export function validateRequestBody(
 
 /**
  * Convert an OpenAPI schema to the corresponding JSON schema.
- * @param openapiSchema The OpenAPI schema to convert.
+ * @param openapiSchema - The OpenAPI schema to convert.
  */
 function convertToJsonSchema(openapiSchema: SchemaObject) {
   const jsonSchema = toJsonSchema(openapiSchema);
@@ -78,15 +78,15 @@ function convertToJsonSchema(openapiSchema: SchemaObject) {
 
 /**
  * Validate the request body data against JSON schema.
- * @param body The request body data.
- * @param schema The JSON schema used to perform the validation.
- * @param globalSchemas Schema references.
+ * @param body - The request body data.
+ * @param schema - The JSON schema used to perform the validation.
+ * @param globalSchemas - Schema references.
  */
 
 const compiledSchemaCache = new WeakMap();
 
 function validateValueAgainstSchema(
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body: any,
   schema: SchemaObject | ReferenceObject,
   globalSchemas?: SchemasObject,

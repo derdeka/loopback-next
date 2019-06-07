@@ -8,6 +8,7 @@ const fs = require('fs');
 const util = require('util');
 const _ = require('lodash');
 const json5 = require('json5');
+const url = require('url');
 
 const utils = require('../../lib/utils');
 const debug = require('../../lib/debug')('openapi-generator');
@@ -47,11 +48,11 @@ function validateUrlOrFile(specUrlStr) {
   if (!specUrlStr) {
     return 'API spec url or file path is required.';
   }
-  var specUrl = url.parse(specUrlStr);
+  const specUrl = url.parse(specUrlStr);
   if (specUrl.protocol === 'http:' || specUrl.protocol === 'https:') {
     return true;
   } else {
-    var stat = fs.existsSync(specUrlStr) && fs.statSync(specUrlStr);
+    const stat = fs.existsSync(specUrlStr) && fs.statSync(specUrlStr);
     if (stat && stat.isFile()) {
       return true;
     } else {
@@ -128,6 +129,11 @@ const JS_KEYWORDS = [
   'false',
 ];
 
+/**
+ * Avoid tslint error - Shadowed name: 'requestBody'
+ */
+const DECORATOR_NAMES = ['operation', 'param', 'requestBody'];
+
 const SAFE_IDENTIFER = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
 
 /**
@@ -148,7 +154,31 @@ function escapeIdentifier(name) {
   if (!name.match(SAFE_IDENTIFER)) {
     name = _.camelCase(name);
   }
+  if (DECORATOR_NAMES.includes(name)) {
+    return '_' + name;
+  }
   return name;
+}
+
+/**
+ * Escape the property if it's not a valid JavaScript identifer
+ * @param {string} name
+ */
+function escapePropertyName(name) {
+  if (JS_KEYWORDS.includes(name) || !name.match(SAFE_IDENTIFER)) {
+    return toJsonStr(name);
+  }
+  return name;
+}
+
+/**
+ * Escape a string to be used as a block comment
+ *
+ * @param {string} comment
+ */
+function escapeComment(comment) {
+  comment = comment || '';
+  return comment.replace(/\/\*/g, '\\/*').replace(/\*\//g, '*\\/');
 }
 
 function toJsonStr(val) {
@@ -163,6 +193,8 @@ module.exports = {
   kebabCase: utils.kebabCase,
   camelCase: _.camelCase,
   escapeIdentifier,
+  escapePropertyName,
+  escapeComment,
   toJsonStr,
   validateUrlOrFile,
 };

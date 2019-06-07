@@ -3,21 +3,21 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import * as assert from 'assert';
 import {
+  createEmptyApiSpec,
+  ISpecificationExtension,
   OpenApiSpec,
   OperationObject,
-  ResponseObject,
   ParameterObject,
-  createEmptyApiSpec,
   RequestBodyObject,
-  ISpecificationExtension,
+  ResponseObject,
 } from '@loopback/openapi-v3-types';
+import * as assert from 'assert';
 
 /**
  * Create a new instance of OpenApiSpecBuilder.
  *
- * @param basePath The base path on which the API is served.
+ * @param basePath - The base path on which the API is served.
  */
 export function anOpenApiSpec() {
   return new OpenApiSpecBuilder();
@@ -40,12 +40,12 @@ export class BuilderBase<T extends ISpecificationExtension> {
   /**
    * Add a custom (extension) property to the spec object.
    *
-   * @param key The property name starting with "x-".
-   * @param value The property value.
+   * @param key - The property name starting with "x-".
+   * @param value - The property value.
    */
   withExtension(
     key: string,
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any,
   ): this {
     assert(
@@ -53,7 +53,10 @@ export class BuilderBase<T extends ISpecificationExtension> {
       `Invalid extension ${key}, extension keys must be prefixed with "x-"`,
     );
 
-    this._spec[key] = value;
+    // `this._spec[key] = value;` is broken in TypeScript 3.5
+    // See https://github.com/microsoft/TypeScript/issues/31661
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this._spec as Record<string, any>)[key] = value;
     return this;
   }
 
@@ -70,7 +73,7 @@ export class BuilderBase<T extends ISpecificationExtension> {
  */
 export class OpenApiSpecBuilder extends BuilderBase<OpenApiSpec> {
   /**
-   * @param basePath The base path on which the API is served.
+   * @param basePath - The base path on which the API is served.
    */
   constructor() {
     super(createEmptyApiSpec());
@@ -79,9 +82,9 @@ export class OpenApiSpecBuilder extends BuilderBase<OpenApiSpec> {
   /**
    * Define a new OperationObject at the given path and verb (method).
    *
-   * @param verb The HTTP verb.
-   * @param path The path relative to basePath.
-   * @param spec Additional specification of the operation.
+   * @param verb - The HTTP verb.
+   * @param path - The path relative to basePath.
+   * @param spec - Additional specification of the operation.
    */
   withOperation(
     verb: string,
@@ -97,9 +100,9 @@ export class OpenApiSpecBuilder extends BuilderBase<OpenApiSpec> {
   /**
    * Define a new operation that returns a string response.
    *
-   * @param verb The HTTP verb.
-   * @param path The path relative to basePath.
-   * @param operationName The name of the controller method implementing
+   * @param verb - The HTTP verb.
+   * @param path - The path relative to basePath.
+   * @param operationName - The name of the controller method implementing
    * this operation (`x-operation-name` field).
    */
   withOperationReturningString(
@@ -126,8 +129,8 @@ export class OperationSpecBuilder extends BuilderBase<OperationObject> {
 
   /**
    * Describe a response for a given HTTP status code.
-   * @param status HTTP status code or string "default"
-   * @param responseSpec Specification of the response
+   * @param status - HTTP status code or string "default"
+   * @param responseSpec - Specification of the response
    */
   withResponse(status: number | 'default', responseSpec: ResponseObject): this {
     // OpenAPI spec uses string indices, i.e. 200 OK uses "200" as the index
@@ -167,7 +170,7 @@ export class OperationSpecBuilder extends BuilderBase<OperationObject> {
   /**
    * Define the operation name (controller method name).
    *
-   * @param name The name of the controller method implementing this operation.
+   * @param name - The name of the controller method implementing this operation.
    */
   withOperationName(name: string): this {
     this.withExtension('x-operation-name', name);
@@ -178,7 +181,7 @@ export class OperationSpecBuilder extends BuilderBase<OperationObject> {
   /**
    * Define the controller name (controller name).
    *
-   * @param name The name of the controller containing this operation.
+   * @param name - The name of the controller containing this operation.
    */
   withControllerName(name: string): this {
     this.withExtension('x-controller-name', name);
@@ -203,7 +206,7 @@ export class OperationSpecBuilder extends BuilderBase<OperationObject> {
 
   /**
    * Define the operationId
-   * @param operationId Operation id
+   * @param operationId - Operation id
    */
   withOperationId(operationId: string): this {
     this._spec.operationId = operationId;

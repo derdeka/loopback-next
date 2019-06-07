@@ -3,15 +3,41 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
+import {
+  ReferenceObject,
+  SchemaObject,
+  SchemasObject,
+} from '@loopback/openapi-v3-types';
 import {JsonSchema} from '@loopback/repository-json-schema';
-import {SchemaObject} from '@loopback/openapi-v3-types';
 import * as _ from 'lodash';
 
 /**
- * Converts JSON Schemas into a SchemaObject
- * @param json JSON Schema to convert from
+ * Custom LoopBack extension: a reference to Schema object that's bundled
+ * inside `definitions` property.
+ *
+ * @example
+ *
+ * ```ts
+ * const spec: SchemaRef = {
+ *   $ref: '/components/schemas/Product',
+ *   definitions: {
+ *     Product: {
+ *       title: 'Product',
+ *       properties: {
+ *         // etc.
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
  */
-export function jsonToSchemaObject(json: JsonSchema): SchemaObject {
+export type SchemaRef = ReferenceObject & {definitions: SchemasObject};
+
+/**
+ * Converts JSON Schemas into a SchemaObject
+ * @param json - JSON Schema to convert from
+ */
+export function jsonToSchemaObject(json: JsonSchema): SchemaObject | SchemaRef {
   const result: SchemaObject = {};
   const propsToIgnore = [
     'anyOf',
@@ -85,7 +111,7 @@ export function jsonToSchemaObject(json: JsonSchema): SchemaObject {
 /**
  * Helper function used to interpret boolean values as JSON Schemas.
  * See http://json-schema.org/draft-06/json-schema-release-notes.html
- * @param jsonOrBool converts boolean values into their representative JSON Schemas
+ * @param jsonOrBool - converts boolean values into their representative JSON Schemas
  * @returns A JSON Schema document representing the input value.
  */
 export function jsonOrBooleanToJSON(jsonOrBool: boolean | JsonSchema) {

@@ -3,17 +3,21 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
+import {expect} from '@loopback/testlab';
 import {
-  CalculatorService,
   CalculatorParameters,
+  CalculatorService,
+  CalculatorServiceProvider,
 } from '../../../services/calculator.service';
-import {CalculatorServiceProvider} from '../../../services/calculator.service';
 import {givenAConnectedDataSource} from '../../helpers';
 
-import {expect} from '@loopback/testlab';
-
-describe('CalculatorService', () => {
+describe('CalculatorService', function() {
   let calculatorService: CalculatorService;
+
+  // The calculator soap server is hosted in the cloud and it takes some time
+  // to wake up and respond to api requests
+  // eslint-disable-next-line no-invalid-this
+  this.timeout(30000);
 
   before(givenACalculatorService);
 
@@ -50,7 +54,7 @@ describe('CalculatorService', () => {
   });
 
   async function givenACalculatorService() {
-    let calculatorDataSource = await givenAConnectedDataSource();
+    const calculatorDataSource = await givenAConnectedDataSource();
     calculatorService = await new CalculatorServiceProvider(
       calculatorDataSource,
     ).value();

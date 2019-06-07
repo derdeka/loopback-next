@@ -12,7 +12,7 @@ import {
   ParameterDecoratorFactory,
   PropertyDecoratorFactory,
 } from '@loopback/metadata';
-import {BindingTag} from './binding';
+import {Binding, BindingTag} from './binding';
 import {
   BindingFilter,
   BindingSelector,
@@ -20,9 +20,10 @@ import {
   isBindingAddress,
 } from './binding-filter';
 import {BindingAddress} from './binding-key';
-import {Context} from './context';
+import {BindingComparator} from './binding-sorter';
+import {BindingCreationPolicy, Context} from './context';
 import {ContextView, createViewGetter} from './context-view';
-import {ResolutionSession} from './resolution-session';
+import {ResolutionOptions, ResolutionSession} from './resolution-session';
 import {BoundValue, ValueOrPromise} from './value-promise';
 
 const PARAMETERS_KEY = MetadataAccessor.create<Injection, ParameterDecorator>(
@@ -30,6 +31,11 @@ const PARAMETERS_KEY = MetadataAccessor.create<Injection, ParameterDecorator>(
 );
 const PROPERTIES_KEY = MetadataAccessor.create<Injection, PropertyDecorator>(
   'inject:properties',
+);
+
+// A key to cache described argument injections
+const METHODS_KEY = MetadataAccessor.create<Injection, MethodDecorator>(
+  'inject:methods',
 );
 
 /**
@@ -46,16 +52,16 @@ export interface ResolverFunction {
 /**
  * An object to provide metadata for `@inject`
  */
-export interface InjectionMetadata {
+export interface InjectionMetadata extends ResolutionOptions {
   /**
    * Name of the decorator function, such as `@inject` or `@inject.setter`.
    * It's usually set by the decorator implementation.
    */
   decorator?: string;
   /**
-   * Control if the dependency is optional, default to false
+   * Optional comparator for matched bindings
    */
-  optional?: boolean;
+  bindingComparator?: BindingComparator;
   /**
    * Other attributes
    */
@@ -81,6 +87,7 @@ export interface Injection<ValueType = BoundValue> {
  * A decorator to annotate method arguments for automatic injection
  * by LoopBack IoC container.
  *
+ * @example
  * Usage - Typescript:
  *
  * ```ts
@@ -97,10 +104,10 @@ export interface Injection<ValueType = BoundValue> {
  *
  *  - TODO(bajtos)
  *
- * @param bindingSelector What binding to use in order to resolve the value of the
+ * @param bindingSelector - What binding to use in order to resolve the value of the
  * decorated constructor parameter or property.
- * @param metadata Optional metadata to help the injection
- * @param resolve Optional function to resolve the injection
+ * @param metadata - Optional metadata to help the injection
+ * @param resolve - Optional function to resolve the injection
  *
  */
 export function inject(
@@ -112,6 +119,9 @@ export function inject(
     resolve = resolveValuesByFilter;
   }
   const injectionMetadata = Object.assign({decorator: '@inject'}, metadata);
+  if (injectionMetadata.bindingComparator && !resolve) {
+    throw new Error('Binding comparator is only allowed with a binding filter');
+  }
   return function markParameterOrPropertyAsInjected(
     target: Object,
     member: string,
@@ -186,7 +196,9 @@ export function inject(
 }
 
 /**
- * The function injected by `@inject.getter(bindingSelector)`.
+ * The function injected by `@inject.getter(bindingSelector)`. It can be used
+ * to fetch bound value(s) from the underlying binding(s). The return value will
+ * be an array if the `bindingSelector` is a `BindingFilter` function.
  */
 export type Getter<T> = () => Promise<T>;
 
@@ -201,9 +213,27 @@ export namespace Getter {
 }
 
 /**
- * The function injected by `@inject.setter(key)`.
+ * The function injected by `@inject.setter(bindingKey)`. It sets the underlying
+ * binding to a constant value using `binding.to(value)`.
+ *
+ * @example
+ *
+ * ```ts
+ * setterFn('my-value');
+ * ```
+ * @param value - The value for the underlying binding
  */
 export type Setter<T> = (value: T) => void;
+
+/**
+ * Metadata for `@inject.binding`
+ */
+export interface InjectBindingMetadata extends InjectionMetadata {
+  /**
+   * Controls how the underlying binding is resolved/created
+   */
+  bindingCreation?: BindingCreationPolicy;
+}
 
 export namespace inject {
   /**
@@ -216,9 +246,9 @@ export namespace inject {
    *
    * See also `Getter<T>`.
    *
-   * @param bindingSelector The binding key or filter we want to eventually get
+   * @param bindingSelector - The binding key or filter we want to eventually get
    * value(s) from.
-   * @param metadata Optional metadata to help the injection
+   * @param metadata - Optional metadata to help the injection
    */
   export const getter = function injectGetter(
     bindingSelector: BindingSelector<unknown>,
@@ -244,15 +274,48 @@ export namespace inject {
    *
    * See also `Setter<T>`.
    *
-   * @param bindingKey The key of the value we want to set.
-   * @param metadata Optional metadata to help the injection
+   * @param bindingKey - The key of the value we want to set.
+   * @param metadata - Optional metadata to help the injection
    */
   export const setter = function injectSetter(
     bindingKey: BindingAddress,
-    metadata?: InjectionMetadata,
+    metadata?: InjectBindingMetadata,
   ) {
     metadata = Object.assign({decorator: '@inject.setter'}, metadata);
     return inject(bindingKey, metadata, resolveAsSetter);
+  };
+
+  /**
+   * Inject the binding object for the given key. This is useful if a binding
+   * needs to be set up beyond just a constant value allowed by
+   * `@inject.setter`. The injected binding is found or created based on the
+   * `metadata.bindingCreation` option. See `BindingCreationPolicy` for more
+   * details.
+   *
+   * @example
+   *
+   * ```ts
+   * class MyAuthAction {
+   *   @inject.binding('current-user', {
+   *     bindingCreation: BindingCreationPolicy.ALWAYS_CREATE,
+   *   })
+   *   private userBinding: Binding<UserProfile>;
+   *
+   *   async authenticate() {
+   *     this.userBinding.toDynamicValue(() => {...});
+   *   }
+   * }
+   * ```
+   *
+   * @param bindingKey - Binding key
+   * @param metadata - Metadata for the injection
+   */
+  export const binding = function injectBinding(
+    bindingKey: BindingAddress,
+    metadata?: InjectBindingMetadata,
+  ) {
+    metadata = Object.assign({decorator: '@inject.binding'}, metadata);
+    return inject(bindingKey, metadata, resolveAsBinding);
   };
 
   /**
@@ -266,8 +329,8 @@ export namespace inject {
    *   ) {}
    * }
    * ```
-   * @param bindingTag Tag name, regex or object
-   * @param metadata Optional metadata to help the injection
+   * @param bindingTag - Tag name, regex or object
+   * @param metadata - Optional metadata to help the injection
    */
   export const tag = function injectByTag(
     bindingTag: BindingTag | RegExp,
@@ -283,16 +346,17 @@ export namespace inject {
   /**
    * Inject matching bound values by the filter function
    *
+   * @example
    * ```ts
    * class MyControllerWithView {
    *   @inject.view(filterByTag('foo'))
    *   view: ContextView<string[]>;
    * }
    * ```
-   * @param bindingFilter A binding filter function
+   * @param bindingFilter - A binding filter function
    * @param metadata
    */
-  export const view = function injectByFilter(
+  export const view = function injectContextView(
     bindingFilter: BindingFilter,
     metadata?: InjectionMetadata,
   ) {
@@ -315,70 +379,191 @@ export namespace inject {
   };
 }
 
+/**
+ * Assert the target type inspected from TypeScript for injection to be the
+ * expected type. If the types don't match, an error is thrown.
+ * @param injection - Injection information
+ * @param expectedType - Expected type
+ * @param expectedTypeName - Name of the expected type to be used in the error
+ * @returns The name of the target
+ */
+export function assertTargetType(
+  injection: Readonly<Injection>,
+  expectedType: Function,
+  expectedTypeName?: string,
+) {
+  const targetName = ResolutionSession.describeInjection(injection).targetName;
+  const targetType = inspectTargetType(injection);
+  if (targetType && targetType !== expectedType) {
+    expectedTypeName = expectedTypeName || expectedType.name;
+    throw new Error(
+      `The type of ${targetName} (${
+        targetType.name
+      }) is not ${expectedTypeName}`,
+    );
+  }
+  return targetName;
+}
+
+/**
+ * Resolver for `@inject.getter`
+ * @param ctx
+ * @param injection
+ * @param session
+ */
 function resolveAsGetter(
   ctx: Context,
   injection: Readonly<Injection>,
-  session?: ResolutionSession,
+  session: ResolutionSession,
 ) {
-  assertTargetIsGetter(injection);
+  assertTargetType(injection, Function, 'Getter function');
   const bindingSelector = injection.bindingSelector as BindingAddress;
   // We need to clone the session for the getter as it will be resolved later
-  session = ResolutionSession.fork(session);
-  return function getter() {
-    return ctx.get(bindingSelector, {
-      session,
-      optional: injection.metadata.optional,
-    });
+  const forkedSession = ResolutionSession.fork(session);
+  const options: ResolutionOptions = {
+    session: forkedSession,
+    ...injection.metadata,
   };
-}
-
-function assertTargetIsGetter(injection: Readonly<Injection>) {
-  const targetType = inspectTargetType(injection);
-  if (targetType && targetType !== Function) {
-    const targetName = ResolutionSession.describeInjection(injection)!
-      .targetName;
-    throw new Error(
-      `The type of ${targetName} (${targetType.name}) is not a Getter function`,
-    );
-  }
-}
-
-function resolveAsSetter(ctx: Context, injection: Injection) {
-  const targetType = inspectTargetType(injection);
-  const targetName = ResolutionSession.describeInjection(injection)!.targetName;
-  if (targetType && targetType !== Function) {
-    throw new Error(
-      `The type of ${targetName} (${targetType.name}) is not a Setter function`,
-    );
-  }
-  const bindingSelector = injection.bindingSelector;
-  if (!isBindingAddress(bindingSelector)) {
-    throw new Error(
-      `@inject.setter for (${targetType.name}) does not allow BindingFilter`,
-    );
-  }
-  // No resolution session should be propagated into the setter
-  return function setter(value: unknown) {
-    ctx.bind(bindingSelector).to(value);
+  return function getter() {
+    return ctx.get(bindingSelector, options);
   };
 }
 
 /**
+ * Resolver for `@inject.setter`
+ * @param ctx
+ * @param injection
+ */
+function resolveAsSetter(ctx: Context, injection: Injection) {
+  const targetName = assertTargetType(injection, Function, 'Setter function');
+  const bindingSelector = injection.bindingSelector;
+  if (!isBindingAddress(bindingSelector)) {
+    throw new Error(
+      `@inject.setter (${targetName}) does not allow BindingFilter.`,
+    );
+  }
+  // No resolution session should be propagated into the setter
+  return function setter(value: unknown) {
+    const binding = findOrCreateBindingForInjection(ctx, injection);
+    binding.to(value);
+  };
+}
+
+function resolveAsBinding(ctx: Context, injection: Injection) {
+  const targetName = assertTargetType(injection, Binding);
+  const bindingSelector = injection.bindingSelector;
+  if (!isBindingAddress(bindingSelector)) {
+    throw new Error(
+      `@inject.binding (${targetName}) does not allow BindingFilter.`,
+    );
+  }
+  return findOrCreateBindingForInjection(ctx, injection);
+}
+
+function findOrCreateBindingForInjection(
+  ctx: Context,
+  injection: Injection<unknown>,
+) {
+  const bindingCreation =
+    injection.metadata &&
+    (injection.metadata as InjectBindingMetadata).bindingCreation;
+  const binding: Binding<unknown> = ctx.findOrCreateBinding(
+    injection.bindingSelector as BindingAddress,
+    bindingCreation,
+  );
+  return binding;
+}
+
+/**
+ * Check if constructor injection should be applied to the base class
+ * of the given target class
+ *
+ * @param targetClass - Target class
+ */
+function shouldSkipBaseConstructorInjection(targetClass: Object) {
+  // FXIME(rfeng): We use the class definition to check certain patterns
+  const classDef = targetClass.toString();
+  return (
+    /*
+     * See https://github.com/strongloop/loopback-next/issues/2946
+     * A class decorator can return a new constructor that mixes in
+     * additional properties/methods.
+     *
+     * @example
+     * ```ts
+     * class extends baseConstructor {
+     *   // The constructor calls `super(...arguments)`
+     *   constructor() {
+     *     super(...arguments);
+     *   }
+     *   classProperty = 'a classProperty';
+     *   classFunction() {
+     *     return 'a classFunction';
+     *   }
+     * };
+     * ```
+     *
+     * We check the following pattern:
+     * ```ts
+     * constructor() {
+     *   super(...arguments);
+     * }
+     * ```
+     */
+    !classDef.match(
+      /\s+constructor\s*\(\s*\)\s*\{\s*super\(\.\.\.arguments\)/,
+    ) &&
+    /*
+     * See https://github.com/strongloop/loopback-next/issues/1565
+     *
+     * @example
+     * ```ts
+     * class BaseClass {
+     *   constructor(@inject('foo') protected foo: string) {}
+     *   // ...
+     * }
+     *
+     * class SubClass extends BaseClass {
+     *   // No explicit constructor is present
+     *
+     *   @inject('bar')
+     *   private bar: number;
+     *   // ...
+     * };
+     *
+     */
+    classDef.match(/\s+constructor\s*\([^\)]*\)\s+\{/m)
+  );
+}
+
+/**
  * Return an array of injection objects for parameters
- * @param target The target class for constructor or static methods,
+ * @param target - The target class for constructor or static methods,
  * or the prototype for instance methods
- * @param method Method name, undefined for constructor
+ * @param method - Method name, undefined for constructor
  */
 export function describeInjectedArguments(
   target: Object,
   method?: string,
 ): Readonly<Injection>[] {
   method = method || '';
+
+  // Try to read from cache
+  const cache =
+    MetadataInspector.getAllMethodMetadata<Readonly<Injection>[]>(
+      METHODS_KEY,
+      target,
+      {
+        ownMetadataOnly: true,
+      },
+    ) || {};
+  let meta: Readonly<Injection>[] = cache[method];
+  if (meta) return meta;
+
+  // Build the description
   const options: InspectionOptions = {};
   if (method === '') {
-    // A hacky way to check if an explicit constructor exists
-    // See https://github.com/strongloop/loopback-next/issues/1565
-    if (target.toString().match(/\s+constructor\s*\([^\)]*\)\s+\{/m)) {
+    if (shouldSkipBaseConstructorInjection(target)) {
       options.ownMetadataOnly = true;
     }
   } else if (target.hasOwnProperty(method)) {
@@ -386,20 +571,30 @@ export function describeInjectedArguments(
     // should be honored
     options.ownMetadataOnly = true;
   }
-  const meta = MetadataInspector.getAllParameterMetadata<Readonly<Injection>>(
-    PARAMETERS_KEY,
+  meta =
+    MetadataInspector.getAllParameterMetadata<Readonly<Injection>>(
+      PARAMETERS_KEY,
+      target,
+      method,
+      options,
+    ) || [];
+
+  // Cache the result
+  cache[method] = meta;
+  MetadataInspector.defineMetadata<MetadataMap<Readonly<Injection>[]>>(
+    METHODS_KEY,
+    cache,
     target,
-    method,
-    options,
   );
-  return meta || [];
+  return meta;
 }
 
 /**
- * Inspect the target type
- * @param injection
+ * Inspect the target type for the injection to find out the corresponding
+ * JavaScript type
+ * @param injection - Injection information
  */
-function inspectTargetType(injection: Readonly<Injection>) {
+export function inspectTargetType(injection: Readonly<Injection>) {
   let type = MetadataInspector.getDesignTypeForProperty(
     injection.target,
     injection.member!,
@@ -420,80 +615,70 @@ function inspectTargetType(injection: Readonly<Injection>) {
 
 /**
  * Resolve an array of bound values matching the filter function for `@inject`.
- * @param ctx Context object
- * @param injection Injection information
- * @param session Resolution session
+ * @param ctx - Context object
+ * @param injection - Injection information
+ * @param session - Resolution session
  */
 function resolveValuesByFilter(
   ctx: Context,
   injection: Readonly<Injection>,
-  session?: ResolutionSession,
+  session: ResolutionSession,
 ) {
-  assertTargetIsArray(injection);
+  assertTargetType(injection, Array);
   const bindingFilter = injection.bindingSelector as BindingFilter;
-  const view = new ContextView(ctx, bindingFilter);
+  const view = new ContextView(
+    ctx,
+    bindingFilter,
+    injection.metadata.bindingComparator,
+  );
   return view.resolve(session);
-}
-
-function assertTargetIsArray(injection: Readonly<Injection>) {
-  const targetType = inspectTargetType(injection);
-  if (targetType !== Array) {
-    const targetName = ResolutionSession.describeInjection(injection)!
-      .targetName;
-    throw new Error(
-      `The type of ${targetName} (${targetType.name}) is not Array`,
-    );
-  }
 }
 
 /**
  * Resolve to a getter function that returns an array of bound values matching
  * the filter function for `@inject.getter`.
  *
- * @param ctx Context object
- * @param injection Injection information
- * @param session Resolution session
+ * @param ctx - Context object
+ * @param injection - Injection information
+ * @param session - Resolution session
  */
 function resolveAsGetterByFilter(
   ctx: Context,
   injection: Readonly<Injection>,
-  session?: ResolutionSession,
+  session: ResolutionSession,
 ) {
-  assertTargetIsGetter(injection);
+  assertTargetType(injection, Function, 'Getter function');
   const bindingFilter = injection.bindingSelector as BindingFilter;
-  return createViewGetter(ctx, bindingFilter, session);
+  return createViewGetter(
+    ctx,
+    bindingFilter,
+    injection.metadata.bindingComparator,
+    session,
+  );
 }
 
 /**
  * Resolve to an instance of `ContextView` by the binding filter function
  * for `@inject.view`
- * @param ctx Context object
- * @param injection Injection information
- * @param session Resolution session
+ * @param ctx - Context object
+ * @param injection - Injection information
  */
-function resolveAsContextView(
-  ctx: Context,
-  injection: Readonly<Injection>,
-  session?: ResolutionSession,
-) {
-  const targetType = inspectTargetType(injection);
-  if (targetType && targetType !== ContextView) {
-    const targetName = ResolutionSession.describeInjection(injection)!
-      .targetName;
-    throw new Error(
-      `The type of ${targetName} (${targetType.name}) is not ContextView`,
-    );
-  }
+function resolveAsContextView(ctx: Context, injection: Readonly<Injection>) {
+  assertTargetType(injection, ContextView);
 
   const bindingFilter = injection.bindingSelector as BindingFilter;
-  const view = new ContextView(ctx, bindingFilter);
+  const view = new ContextView(
+    ctx,
+    bindingFilter,
+    injection.metadata.bindingComparator,
+  );
   view.open();
   return view;
 }
 
 /**
  * Return a map of injection objects for properties
- * @param target The target class for static properties or
+ * @param target - The target class for static properties or
  * prototype for instance properties.
  */
 export function describeInjectedProperties(

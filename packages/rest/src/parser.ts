@@ -23,8 +23,8 @@ const debug = debugFactory('loopback:rest:parser');
  * Parses the request to derive arguments to be passed in for the Application
  * controller method
  *
- * @param request Incoming HTTP request
- * @param route Resolved Route
+ * @param request - Incoming HTTP request
+ * @param route - Resolved Route
  */
 export async function parseOperationArgs(
   request: Request,
@@ -54,7 +54,7 @@ function buildOperationArguments(
   body: RequestBody,
   globalSchemas: SchemasObject,
 ): OperationArgs {
-  let requestBodyIndex: number = -1;
+  let requestBodyIndex = -1;
   if (operationSpec.requestBody) {
     // the type of `operationSpec.requestBody` could be `RequestBodyObject`
     // or `ReferenceObject`, resolving a `$ref` value is not supported yet.

@@ -3,6 +3,106 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.8.0...@loopback/core@1.8.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.8.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.3...@loopback/core@1.8.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.7.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.2...@loopback/core@1.7.3) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.7.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.1...@loopback/core@1.7.2) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.7.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.7.0...@loopback/core@1.7.1) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.3...@loopback/core@1.7.0) (2019-05-14)
+
+
+### Features
+
+* **context:** add binding comparator to sort bindings ([ae3d61f](https://github.com/strongloop/loopback-next/commit/ae3d61f))
+
+
+
+
+
+## [1.6.3](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.2...@loopback/core@1.6.3) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.6.2](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.1...@loopback/core@1.6.2) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.6.0...@loopback/core@1.6.1) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/core
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.5.0...@loopback/core@1.6.0) (2019-04-26)
+
+
+### Features
+
+* **core:** add help functions/decorators for extension point/extension ([89f3cbc](https://github.com/strongloop/loopback-next/commit/89f3cbc))
+
+
+
+
+
+# [1.5.0](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.4.1...@loopback/core@1.5.0) (2019-04-20)
+
+
+### Features
+
+* **build:** add more TypeScript "strict" checks ([866aa2f](https://github.com/strongloop/loopback-next/commit/866aa2f))
+
+
+
+
+
 ## [1.4.1](https://github.com/strongloop/loopback-next/compare/@loopback/core@1.4.0...@loopback/core@1.4.1) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/core

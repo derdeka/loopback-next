@@ -21,8 +21,9 @@ DIR=`dirname $0`
 REPO_ROOT=$DIR/..
 pushd $REPO_ROOT >/dev/null
 
-# Update README duplicates inside docs/site/readmes
-node docs/bin/copy-readmes.js
+# Update apidocs
+lerna bootstrap
+lerna run --scope @loopback/docs prepack
 
 # Clean up sandbox/loopback.io directory
 rm -rf sandbox/loopback.io/
@@ -30,8 +31,8 @@ rm -rf sandbox/loopback.io/
 # Shadow clone the `strongloop/loopback.io` github repo
 git clone --depth 1 https://github.com/strongloop/loopback.io.git sandbox/loopback.io
 
-# Bootstrap the `loopback.io` package
-lerna bootstrap --scope loopback.io-workflow-scripts
+# Add loopback.io-workflow-scripts with @loopback/docs linked
+lerna bootstrap --scope @loopback/docs --scope loopback.io-workflow-scripts
 
 pushd $REPO_ROOT/sandbox/loopback.io/ >/dev/null
 

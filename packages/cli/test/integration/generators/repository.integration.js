@@ -8,7 +8,6 @@
 const path = require('path');
 const assert = require('yeoman-assert');
 const testlab = require('@loopback/testlab');
-const fs = require('fs');
 
 const expect = testlab.expect;
 const TestSandbox = testlab.TestSandbox;
@@ -22,7 +21,7 @@ const SANDBOX_PATH = path.resolve(__dirname, '..', '.sandbox');
 const sandbox = new TestSandbox(SANDBOX_PATH);
 
 describe('lb4 repository', function() {
-  // tslint:disable-next-line:no-invalid-this
+  // eslint-disable-next-line no-invalid-this
   this.timeout(30000);
 
   beforeEach('reset sandbox', async () => {
@@ -282,6 +281,7 @@ describe('lb4 repository', function() {
         /export class DefaultModelRepository extends DefaultCrudRepository\</,
       );
       assert.fileContent(expectedFile, /typeof DefaultModel.prototype.id/);
+      assert.fileContent(expectedFile, /DefaultModelRelations/);
       assert.file(INDEX_FILE);
       assert.fileContent(
         INDEX_FILE,

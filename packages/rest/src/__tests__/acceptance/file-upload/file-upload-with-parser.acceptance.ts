@@ -46,6 +46,8 @@ describe('multipart/form-data parser', () => {
       originalname: 'file-upload-test.txt',
       mimetype: FORM_DATA,
     });
+    expect(res.body.fields.user).to.equal('john');
+    expect(res.body.fields.email).to.equal('john@example.com');
   });
 
   class FileUploadController {
@@ -101,15 +103,14 @@ class MultipartFormDataBodyParser implements BodyParser {
     const storage = multer.memoryStorage();
     const upload = multer({storage});
     return new Promise<RequestBody>((resolve, reject) => {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       upload.any()(request, {} as any, err => {
         if (err) reject(err);
         else {
           resolve({
             value: {
               files: request.files,
-              // tslint:disable-next-line:no-any
-              fields: (request as any).fields,
+              fields: request.body,
             },
           });
         }

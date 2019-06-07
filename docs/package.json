@@ -1,6 +1,6 @@
 {
   "name": "@loopback/docs",
-  "version": "1.14.0",
+  "version": "1.22.1",
   "description": "Documentation for LoopBack 4",
   "homepage": "https://github.com/strongloop/loopback-next/tree/master/docs",
   "author": "IBM Corp.",
@@ -16,11 +16,11 @@
   ],
   "scripts": {
     "build:apidocs": "lb-apidocs --html-file=index.html",
-    "prepublishOnly": "node ./bin/copy-readmes",
-    "clean": "lb-clean loopback-docs*.tgz package api-docs site/readmes"
+    "prepack": "node ./bin/copy-readmes && cd .. && npm run tsdocs",
+    "clean": "lb-clean loopback-docs*.tgz package api-docs apidocs site/readmes site/apidocs"
   },
   "devDependencies": {
-    "@loopback/build": "^1.4.3"
+    "@loopback/build": "^1.7.1"
   },
   "publishConfig": {
     "access": "public"
@@ -32,6 +32,6 @@
   "copyright.owner": "IBM Corp.",
   "license": "MIT",
   "dependencies": {
-    "fs-extra": "^7.0.1"
+    "fs-extra": "^8.0.0"
   }
 }

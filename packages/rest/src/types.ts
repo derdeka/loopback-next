@@ -41,10 +41,10 @@ export type ParseParams = (
 /**
  * Invokes a method defined in the Application Controller
  *
- * @param controller Name of end-user's application controller
+ * @param controller - Name of end-user's application controller
  *  class which defines the methods.
- * @param method Method name in application controller class
- * @param args Operation arguments for the method
+ * @param method - Method name in application controller class
+ * @param args - Operation arguments for the method
  * @returns OperationRetval Result from method invocation
  */
 export type InvokeMethod = (
@@ -55,26 +55,26 @@ export type InvokeMethod = (
 /**
  * Send the operation response back to the client.
  *
- * @param response The response the response to send to.
- * @param result The operation result to send.
+ * @param response - The response the response to send to.
+ * @param result - The operation result to send.
  */
 export type Send = (response: Response, result: OperationRetval) => void;
 
 /**
  * Reject the request with an error.
  *
- * @param handlerContext The context object holding HTTP request, response
+ * @param handlerContext - The context object holding HTTP request, response
  * and other data  needed to handle an incoming HTTP request.
- * @param err The error.
+ * @param err - The error.
  */
 export type Reject = (handlerContext: HandlerContext, err: Error) => void;
 
 /**
  * Log information about a failed request.
  *
- * @param err The error reported by request handling code.
- * @param statusCode Status code of the HTTP response
- * @param request The request that failed.
+ * @param err - The error reported by request handling code.
+ * @param statusCode - Status code of the HTTP response
+ * @param request - The request that failed.
  */
 export type LogError = (
   err: Error,
@@ -82,7 +82,7 @@ export type LogError = (
   request: Request,
 ) => void;
 
-// tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Options for request body parsing
@@ -105,7 +105,6 @@ export type OperationArgs = any[];
  * operation results from other "any" typed values.
  */
 export type OperationRetval = any;
-// tslint:enable:no-any
 
 export type GetFromContext = (key: string) => Promise<BoundValue>;
 export type BindElement = (key: string) => Binding;

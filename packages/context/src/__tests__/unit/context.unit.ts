@@ -6,10 +6,12 @@
 import {expect} from '@loopback/testlab';
 import {
   Binding,
+  BindingCreationPolicy,
   BindingKey,
   BindingScope,
   BindingType,
   Context,
+  ContextEventObserver,
   isPromiseLike,
 } from '../..';
 
@@ -18,12 +20,16 @@ import {
  * for assertions
  */
 class TestContext extends Context {
+  observers: Set<ContextEventObserver> | undefined;
   get parent() {
     return this._parent;
   }
   get bindingMap() {
     const map = new Map(this.registry);
     return map;
+  }
+  get parentEventListeners() {
+    return this._parentEventListeners;
   }
 }
 
@@ -342,6 +348,89 @@ describe('Context', () => {
     });
   });
 
+  describe('findOrCreateBinding', () => {
+    context('with BindingCreationPolicy.ALWAYS_CREATE', () => {
+      it('creates a new binding even the key is bound', () => {
+        const current = ctx.bind('foo');
+        const actual: Binding = ctx.findOrCreateBinding(
+          'foo',
+          BindingCreationPolicy.ALWAYS_CREATE,
+        );
+        expect(actual).to.be.not.exactly(current);
+      });
+
+      it('creates a new binding if not bound', () => {
+        const binding = ctx.findOrCreateBinding(
+          'a-new-key',
+          BindingCreationPolicy.ALWAYS_CREATE,
+        );
+        expect(binding.key).to.eql('a-new-key');
+      });
+    });
+
+    context('with BindingCreationPolicy.NEVER_CREATE', () => {
+      it('returns the exiting binding if the key is bound', () => {
+        const current = ctx.bind('foo');
+        const actual: Binding = ctx.findOrCreateBinding(
+          'foo',
+          BindingCreationPolicy.NEVER_CREATE,
+        );
+        expect(actual).to.be.exactly(current);
+      });
+
+      it('throws an error if the key is not bound', () => {
+        expect(() =>
+          ctx.findOrCreateBinding(
+            'a-new-key',
+            BindingCreationPolicy.NEVER_CREATE,
+          ),
+        ).to.throw(/The key 'a-new-key' is not bound to any value in context/);
+      });
+    });
+
+    context('with BindingCreationPolicy.CREATE_IF_NOT_BOUND', () => {
+      it('returns the binding object registered under the given key', () => {
+        const expected = ctx.bind('foo');
+        const actual: Binding = ctx.findOrCreateBinding(
+          'foo',
+          BindingCreationPolicy.CREATE_IF_NOT_BOUND,
+        );
+        expect(actual).to.be.exactly(expected);
+      });
+
+      it('creates a new binding if the key is not bound', () => {
+        const binding = ctx.findOrCreateBinding(
+          'a-new-key',
+          BindingCreationPolicy.CREATE_IF_NOT_BOUND,
+        );
+        expect(binding.key).to.eql('a-new-key');
+      });
+    });
+
+    context(
+      'without bindingCreationPolicy (default: CREATE_IF_NOT_BOUND)',
+      () => {
+        it('returns the binding object registered under the given key', () => {
+          const expected = ctx.bind('foo');
+          const actual: Binding = ctx.findOrCreateBinding('foo');
+          expect(actual).to.be.exactly(expected);
+        });
+
+        it('creates a new binding if the key is not bound', () => {
+          const binding = ctx.findOrCreateBinding('a-new-key');
+          expect(binding.key).to.eql('a-new-key');
+        });
+      },
+    );
+
+    it('rejects a key containing property separator', () => {
+      const key = 'a' + BindingKey.PROPERTY_SEPARATOR + 'b';
+      expect(() => ctx.findOrCreateBinding(key)).to.throw(
+        /Binding key .* cannot contain/,
+      );
+    });
+  });
+
   describe('getSync', () => {
     it('returns the value immediately when the binding is sync', () => {
       ctx.bind('foo').to('bar');
@@ -446,6 +535,21 @@ describe('Context', () => {
       expect(result).to.equal(2);
       result = childCtx.getSync('foo');
       expect(result).to.equal(1);
+    });
+  });
+
+  describe('getOwnerContext', () => {
+    it('returns owner context', () => {
+      ctx.bind('foo').to('bar');
+      expect(ctx.getOwnerContext('foo')).to.equal(ctx);
+    });
+
+    it('returns owner context with parent', () => {
+      ctx.bind('foo').to('bar');
+      const childCtx = new Context(ctx, 'child');
+      childCtx.bind('xyz').to('abc');
+      expect(childCtx.getOwnerContext('foo')).to.equal(ctx);
+      expect(childCtx.getOwnerContext('xyz')).to.equal(childCtx);
     });
   });
 
@@ -641,18 +745,48 @@ describe('Context', () => {
   });
 
   describe('close()', () => {
-    it('clears all bindings', () => {
-      ctx.bind('foo').to('foo-value');
-      expect(ctx.bindingMap.size).to.eql(1);
-      ctx.close();
-      expect(ctx.bindingMap.size).to.eql(0);
+    it('clears all observers', () => {
+      const childCtx = new TestContext(ctx);
+      childCtx.subscribe(() => {});
+      expect(childCtx.observers!.size).to.eql(1);
+      childCtx.close();
+      expect(childCtx.observers).to.be.undefined();
     });
 
-    it('dereferences parent', () => {
+    it('removes listeners from parent context', () => {
       const childCtx = new TestContext(ctx);
-      expect(childCtx.parent).to.equal(ctx);
+      childCtx.subscribe(() => {});
+      // Now we have one observer
+      expect(childCtx.observers!.size).to.eql(1);
+      // Two listeners are also added to the parent context
+      const parentEventListeners = childCtx.parentEventListeners!;
+      expect(parentEventListeners.size).to.eql(2);
+
+      // The map contains listeners added to the parent context
+      // Take a snapshot into `copy`
+      const copy = new Map(parentEventListeners);
+      for (const [key, val] of copy.entries()) {
+        expect(val).to.be.a.Function();
+        expect(ctx.listeners(key)).to.containEql(val);
+      }
+
+      // Now clear subscriptions
       childCtx.close();
-      expect(childCtx.parent).to.be.undefined();
+
+      // observers are gone
+      expect(childCtx.observers).to.be.undefined();
+      // listeners are removed from parent context
+      for (const [key, val] of copy.entries()) {
+        expect(ctx.listeners(key)).to.not.containEql(val);
+      }
+    });
+
+    it('keeps parent and bindings', () => {
+      const childCtx = new TestContext(ctx);
+      childCtx.bind('foo').to('foo-value');
+      childCtx.close();
+      expect(childCtx.parent).to.equal(ctx);
+      expect(childCtx.contains('foo'));
     });
   });
 

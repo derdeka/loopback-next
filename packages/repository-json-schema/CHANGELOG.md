@@ -3,6 +3,103 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.6.0...@loopback/repository-json-schema@1.6.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.5.1...@loopback/repository-json-schema@1.6.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.5.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.5.0...@loopback/repository-json-schema@1.5.1) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+# [1.5.0](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.8...@loopback/repository-json-schema@1.5.0) (2019-05-30)
+
+
+### Features
+
+* helpers for building JSON/OpenAPI schema referencing shared definitions ([bf07ff9](https://github.com/strongloop/loopback-next/commit/bf07ff9))
+
+
+
+
+
+## [1.4.8](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.7...@loopback/repository-json-schema@1.4.8) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+## [1.4.7](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.6...@loopback/repository-json-schema@1.4.7) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+## [1.4.6](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.5...@loopback/repository-json-schema@1.4.6) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+## [1.4.5](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.4...@loopback/repository-json-schema@1.4.5) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+## [1.4.4](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.3...@loopback/repository-json-schema@1.4.4) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
+## [1.4.3](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.2...@loopback/repository-json-schema@1.4.3) (2019-04-26)
+
+
+### Bug Fixes
+
+* **repository-json-schema:** resolve the circular reference ([9b49773](https://github.com/strongloop/loopback-next/commit/9b49773))
+
+
+
+
+
+## [1.4.2](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.1...@loopback/repository-json-schema@1.4.2) (2019-04-20)
+
+**Note:** Version bump only for package @loopback/repository-json-schema
+
+
+
+
+
 ## [1.4.1](https://github.com/strongloop/loopback-next/compare/@loopback/repository-json-schema@1.4.0...@loopback/repository-json-schema@1.4.1) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/repository-json-schema

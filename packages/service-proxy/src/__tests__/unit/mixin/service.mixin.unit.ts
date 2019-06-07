@@ -13,8 +13,6 @@ import {
 import {expect} from '@loopback/testlab';
 import {Class, ServiceMixin} from '../../../';
 
-// tslint:disable:no-any
-
 describe('ServiceMixin', () => {
   it('mixed class has .serviceProvider()', () => {
     const myApp = new AppWithServiceMixin();

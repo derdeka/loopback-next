@@ -3,6 +3,99 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.7.0...@loopback/build@1.7.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+# [1.7.0](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.6.1...@loopback/build@1.7.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.6.1](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.6.0...@loopback/build@1.6.1) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+# [1.6.0](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.5...@loopback/build@1.6.0) (2019-05-30)
+
+
+### Features
+
+* **build:** add eslint scripts and default configs ([a6abe86](https://github.com/strongloop/loopback-next/commit/a6abe86))
+* **tsdocs:** add integration with api-extractor/documenter ([c8d9572](https://github.com/strongloop/loopback-next/commit/c8d9572))
+
+
+
+
+
+## [1.5.5](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.4...@loopback/build@1.5.5) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+## [1.5.4](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.3...@loopback/build@1.5.4) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+## [1.5.3](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.2...@loopback/build@1.5.3) (2019-05-10)
+
+
+### Bug Fixes
+
+* **build:** honor tsconfig compilerOptions.rootDir to copy resources ([8a8857d](https://github.com/strongloop/loopback-next/commit/8a8857d))
+
+
+
+
+
+## [1.5.2](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.1...@loopback/build@1.5.2) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+## [1.5.1](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.5.0...@loopback/build@1.5.1) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/build
+
+
+
+
+
+# [1.5.0](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.4.3...@loopback/build@1.5.0) (2019-04-20)
+
+
+### Features
+
+* **build:** add more TypeScript "strict" checks ([866aa2f](https://github.com/strongloop/loopback-next/commit/866aa2f))
+
+
+
+
+
 ## [1.4.3](https://github.com/strongloop/loopback-next/compare/@loopback/build@1.4.2...@loopback/build@1.4.3) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/build

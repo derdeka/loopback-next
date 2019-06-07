@@ -25,9 +25,9 @@ const debug = debugModule('loopback:boot:bootstrapper');
  * NOTE: Bootstrapper should be bound as a SINGLETON so it can be cached as
  * it does not maintain any state of it's own.
  *
- * @param app Application instance
- * @param projectRoot The root directory of the project, relative to which all other paths are resolved
- * @param [bootOptions] The BootOptions describing the conventions to be used by various Booters
+ * @param app - Application instance
+ * @param projectRoot - The root directory of the project, relative to which all other paths are resolved
+ * @param bootOptions - The BootOptions describing the conventions to be used by various Booters
  */
 export class Bootstrapper {
   constructor(
@@ -51,9 +51,9 @@ export class Bootstrapper {
    * are bound to the Application instance. Each phase of an instance must
    * complete before the next phase is started.
    *
-   * @param {BootExecutionOptions} execOptions Execution options for boot. These
+   * @param execOptions - Execution options for boot. These
    * determine the phases and booters that are run.
-   * @param {Context} [ctx] Optional Context to use to resolve bindings. This is
+   * @param ctx - Optional Context to use to resolve bindings. This is
    * primarily useful when running app.boot() again but with different settings
    * (in particular phases) such as 'start' / 'stop'. Using a returned Context from
    * a previous boot call allows DI to retrieve the same instances of Booters previously
@@ -84,11 +84,11 @@ export class Bootstrapper {
     const bindings = bootCtx.findByTag(BootBindings.BOOTER_TAG);
 
     // Prefix length. +1 because of `.` => 'booters.'
-    const prefix_length = BootBindings.BOOTER_PREFIX.length + 1;
+    const prefixLength = BootBindings.BOOTER_PREFIX.length + 1;
 
     // Names of all registered booters.
     const defaultBooterNames = bindings.map(binding =>
-      binding.key.slice(prefix_length),
+      binding.key.slice(prefixLength),
     );
 
     // Determining the booters to be run. If a user set a booters filter (class
@@ -102,7 +102,7 @@ export class Bootstrapper {
 
     // Filter bindings by names
     const filteredBindings = bindings.filter(binding =>
-      names.includes(binding.key.slice(prefix_length)),
+      names.includes(binding.key.slice(prefixLength)),
     );
 
     // Resolve Booter Instances

@@ -15,16 +15,16 @@ import {AUTHENTICATION_METADATA_KEY} from '../keys';
  */
 export interface AuthenticationMetadata {
   strategy: string;
-  options?: Object;
+  options?: object;
 }
 
 /**
  * Mark a controller method as requiring authenticated user.
  *
- * @param strategyName The name of the authentication strategy to use.
- * @param options Additional options to configure the authentication.
+ * @param strategyName - The name of the authentication strategy to use.
+ * @param options - Additional options to configure the authentication.
  */
-export function authenticate(strategyName: string, options?: Object) {
+export function authenticate(strategyName: string, options?: object) {
   return MethodDecoratorFactory.createDecorator<AuthenticationMetadata>(
     AUTHENTICATION_METADATA_KEY,
     {
@@ -37,8 +37,8 @@ export function authenticate(strategyName: string, options?: Object) {
 /**
  * Fetch authentication metadata stored by `@authenticate` decorator.
  *
- * @param controllerClass Target controller
- * @param methodName Target method
+ * @param controllerClass - Target controller
+ * @param methodName - Target method
  */
 export function getAuthenticateMetadata(
   controllerClass: Constructor<{}>,

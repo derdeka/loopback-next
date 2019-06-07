@@ -34,12 +34,10 @@ export const MODEL_WITH_PROPERTIES_KEY = MetadataAccessor.create<
 
 export type PropertyMap = MetadataMap<PropertyDefinition>;
 
-// tslint:disable:no-any
-
 /**
  * Decorator for model definitions
  * @param definition
- * @returns {(target:any)}
+ * @returns A class decorator for `model`
  */
 export function model(definition?: Partial<ModelDefinitionSyntax>) {
   return function(target: Function & {definition?: ModelDefinition}) {
@@ -61,8 +59,8 @@ export function model(definition?: Partial<ModelDefinitionSyntax>) {
 
 /**
  * Build model definition from decorations
- * @param target Target model class
- * @param def Model definition spec
+ * @param target - Target model class
+ * @param def - Model definition spec
  */
 export function buildModelDefinition(
   target: Function & {definition?: ModelDefinition | undefined},
@@ -107,7 +105,7 @@ export function buildModelDefinition(
 /**
  * Decorator for model properties
  * @param definition
- * @returns {(target:any, key:string)}
+ * @returns A property decorator
  */
 export function property(definition?: Partial<PropertyDefinition>) {
   return PropertyDecoratorFactory.createDecorator(
@@ -123,16 +121,16 @@ export namespace property {
 
   /**
    *
-   * @param itemType The type of array items.
+   * @param itemType - The type of array items.
    * Examples: `number`, `Product`, `() => Order`.
-   * @param definition Optional PropertyDefinition object for additional
+   * @param definition - Optional PropertyDefinition object for additional
    * metadata
    */
   export function array(
     itemType: PropertyType,
     definition?: Partial<PropertyDefinition>,
   ) {
-    return function(target: Object, propertyName: string) {
+    return function(target: object, propertyName: string) {
       const propType = MetadataInspector.getDesignTypeForProperty(
         target,
         propertyName,

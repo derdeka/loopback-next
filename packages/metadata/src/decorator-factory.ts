@@ -3,13 +3,14 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Reflector} from './reflect';
-import * as _ from 'lodash';
 import * as debugModule from 'debug';
-import {MetadataMap, DecoratorType, MetadataKey} from './types';
+import * as _ from 'lodash';
+import {Reflector} from './reflect';
+import {DecoratorType, MetadataKey, MetadataMap} from './types';
 const debug = debugModule('loopback:metadata:decorator');
 
-// tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Options for a decorator
  */
@@ -64,9 +65,9 @@ export class DecoratorFactory<
 
   /**
    * Construct a new class decorator factory
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator. Default to
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator. Default to
    * `{allowInheritance: true}` if not provided
    */
   constructor(
@@ -92,12 +93,12 @@ export class DecoratorFactory<
    * metadata into the spec if `allowInheritance` is set to `true`. To customize
    * the behavior, this method can be overridden by sub classes.
    *
-   * @param inheritedMetadata Metadata from base classes for the member
+   * @param inheritedMetadata - Metadata from base classes for the member
    */
   protected inherit(inheritedMetadata: T | undefined | null): T {
     if (!this.allowInheritance()) return this.spec;
     if (inheritedMetadata == null) return this.spec;
-    if (this.spec == undefined) return inheritedMetadata;
+    if (this.spec == null) return inheritedMetadata;
     if (typeof inheritedMetadata !== 'object') return this.spec;
     if (Array.isArray(inheritedMetadata) || Array.isArray(this.spec)) {
       // For arrays, we don't merge
@@ -118,13 +119,13 @@ export class DecoratorFactory<
    * MyClass.prototype.myMethod()
    * MyClass.prototype.myMethod[1] // Second parameter of myMethod
    * ```
-   * @param target Class or prototype of a class
-   * @param member Optional property/method name
-   * @param descriptorOrIndex Optional method descriptor or parameter index
+   * @param target - Class or prototype of a class
+   * @param member - Optional property/method name
+   * @param descriptorOrIndex - Optional method descriptor or parameter index
    */
   static getTargetName(
     target: Object,
-    member?: string,
+    member?: string | symbol,
     descriptorOrIndex?: TypedPropertyDescriptor<any> | number,
   ) {
     let name =
@@ -135,21 +136,25 @@ export class DecoratorFactory<
       return `class ${name}`;
     }
     if (member == null) member = 'constructor';
+
+    const memberAccessor =
+      typeof member === 'symbol' ? '[' + member.toString() + ']' : '.' + member;
+
     if (typeof descriptorOrIndex === 'number') {
       // Parameter
-      name = `${name}.${member}[${descriptorOrIndex}]`;
+      name = `${name}${memberAccessor}[${descriptorOrIndex}]`;
     } else if (descriptorOrIndex != null) {
-      name = `${name}.${member}()`;
+      name = `${name}${memberAccessor}()`;
     } else {
-      name = `${name}.${member}`;
+      name = `${name}${memberAccessor}`;
     }
     return name;
   }
 
   /**
    * Get the number of parameters for a given constructor or method
-   * @param target Class or the prototype
-   * @param member Method name
+   * @param target - Class or the prototype
+   * @param member - Method name
    */
   static getNumberOfParameters(target: Object, member?: string) {
     if (target instanceof Function && !member) {
@@ -164,8 +169,8 @@ export class DecoratorFactory<
   /**
    * Set a reference to the target class or prototype for a given spec if
    * it's an object
-   * @param spec Metadata spec
-   * @param target Target of the decoration. It is a class or the prototype of
+   * @param spec - Metadata spec
+   * @param target - Target of the decoration. It is a class or the prototype of
    * a class.
    */
   withTarget(spec: T, target: Object) {
@@ -183,7 +188,7 @@ export class DecoratorFactory<
 
   /**
    * Get the optional decoration target of a given spec
-   * @param spec Metadata spec
+   * @param spec - Metadata spec
    */
   getTarget(spec: T) {
     if (typeof spec === 'object' && spec != null) {
@@ -202,15 +207,15 @@ export class DecoratorFactory<
    *
    * It MUST be overridden by subclasses to process inherited metadata.
    *
-   * @param inheritedMetadata Metadata inherited from the base classes
-   * @param target Decoration target
-   * @param member Optional property or method
-   * @param descriptorOrIndex Optional parameter index or method descriptor
+   * @param inheritedMetadata - Metadata inherited from the base classes
+   * @param target - Decoration target
+   * @param member - Optional property or method
+   * @param descriptorOrIndex - Optional parameter index or method descriptor
    */
   protected mergeWithInherited(
     inheritedMetadata: M,
     target: Object,
-    member?: string,
+    member?: string | symbol,
     descriptorOrIndex?: TypedPropertyDescriptor<any> | number,
   ): M {
     throw new Error('mergeWithInherited() is not implemented');
@@ -224,15 +229,15 @@ export class DecoratorFactory<
    *
    * It MUST be overridden by subclasses to process own metadata.
    *
-   * @param ownMetadata Own Metadata exists locally on the target
-   * @param target Decoration target
-   * @param member Optional property or method
-   * @param descriptorOrIndex Optional parameter index or method descriptor
+   * @param ownMetadata - Own Metadata exists locally on the target
+   * @param target - Decoration target
+   * @param member - Optional property or method
+   * @param descriptorOrIndex - Optional parameter index or method descriptor
    */
   protected mergeWithOwn(
     ownMetadata: M,
     target: Object,
-    member?: string,
+    member?: string | symbol,
     descriptorOrIndex?: TypedPropertyDescriptor<any> | number,
   ): M {
     throw new Error('mergeWithOwn() is not implemented');
@@ -248,13 +253,13 @@ export class DecoratorFactory<
 
   /**
    * Base implementation of the decorator function
-   * @param target Decorator target
-   * @param member Optional property or method
-   * @param descriptorOrIndex Optional method descriptor or parameter index
+   * @param target - Decorator target
+   * @param member - Optional property or method
+   * @param descriptorOrIndex - Optional method descriptor or parameter index
    */
   protected decorate(
     target: Object,
-    member?: string,
+    member?: string | symbol,
     descriptorOrIndex?: TypedPropertyDescriptor<any> | number,
   ) {
     const targetName = DecoratorFactory.getTargetName(
@@ -287,9 +292,9 @@ export class DecoratorFactory<
 
   /**
    * Create a decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   protected static _createDecorator<
     T,
@@ -376,9 +381,9 @@ export class ClassDecoratorFactory<T> extends DecoratorFactory<
 
   /**
    * Create a class decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   static createDecorator<T>(
     key: MetadataKey<T, ClassDecorator>,
@@ -430,15 +435,15 @@ export class PropertyDecoratorFactory<T> extends DecoratorFactory<
   }
 
   create(): PropertyDecorator {
-    return (target: Object, propertyName: string) =>
+    return (target: Object, propertyName: string | symbol) =>
       this.decorate(target, propertyName);
   }
 
   /**
    * Create a property decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   static createDecorator<T>(
     key: MetadataKey<T, PropertyDecorator>,
@@ -498,16 +503,16 @@ export class MethodDecoratorFactory<T> extends DecoratorFactory<
   create(): MethodDecorator {
     return (
       target: Object,
-      methodName: string,
+      methodName: string | symbol,
       descriptor: TypedPropertyDescriptor<any>,
     ) => this.decorate(target, methodName, descriptor);
   }
 
   /**
    * Create a method decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   static createDecorator<T>(
     key: MetadataKey<T, MethodDecorator>,
@@ -592,15 +597,18 @@ export class ParameterDecoratorFactory<T> extends DecoratorFactory<
   }
 
   create(): ParameterDecorator {
-    return (target: Object, methodName: string, parameterIndex: number) =>
-      this.decorate(target, methodName, parameterIndex);
+    return (
+      target: Object,
+      methodName: string | symbol,
+      parameterIndex: number,
+    ) => this.decorate(target, methodName, parameterIndex);
   }
 
   /**
    * Create a parameter decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   static createDecorator<T>(
     key: MetadataKey<T, ParameterDecorator>,
@@ -616,8 +624,11 @@ export class ParameterDecoratorFactory<T> extends DecoratorFactory<
 }
 
 /**
- * Factory for method level parameter decorator. For example, the following
- * code uses `@param` to declare two parameters for `greet()`.
+ * Factory for method level parameter decorator.
+ *
+ * @example
+ * For example, the following code uses `@param` to declare two parameters for
+ * `greet()`.
  * ```ts
  * class MyController {
  *   @param('name') // Parameter 0
@@ -706,7 +717,7 @@ export class MethodParameterDecoratorFactory<T> extends DecoratorFactory<
     ownMetadata = ownMetadata || {};
     const index = this.getParameterIndex(target, methodName, methodDescriptor);
 
-    let params =
+    const params =
       ownMetadata[methodName!] || new Array(index + 1).fill(undefined);
     params[index] = this.withTarget(<T>this.inherit(params[index]), target);
     ownMetadata[methodName!] = params;
@@ -723,16 +734,16 @@ export class MethodParameterDecoratorFactory<T> extends DecoratorFactory<
   create(): MethodDecorator {
     return (
       target: Object,
-      methodName: string,
+      methodName: string | symbol,
       descriptor: TypedPropertyDescriptor<any>,
     ) => this.decorate(target, methodName, descriptor);
   }
 
   /**
    * Create a method decorator function
-   * @param key Metadata key
-   * @param spec Metadata object from the decorator function
-   * @param options Options for the decorator
+   * @param key - Metadata key
+   * @param spec - Metadata object from the decorator function
+   * @param options - Options for the decorator
    */
   static createDecorator<T>(
     key: MetadataKey<T, MethodDecorator>,

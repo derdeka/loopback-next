@@ -4,28 +4,27 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {InspectionOptions, MetadataInspector} from '@loopback/context';
+import {ModelDefinition} from '../model';
 import {
   MODEL_KEY,
   MODEL_PROPERTIES_KEY,
   MODEL_WITH_PROPERTIES_KEY,
   PropertyMap,
 } from './model.decorator';
-import {ModelDefinition} from '../model';
 
 export class ModelMetadataHelper {
   /**
    * A utility function to simplify retrieving metadata from a target model and
    * its properties.
-   * @param target The class from which to retrieve metadata.
-   * @param options An options object for the MetadataInspector to customize
+   * @param target - The class from which to retrieve metadata.
+   * @param options - An options object for the MetadataInspector to customize
    * the output of the metadata retrieval functions.
    */
   static getModelMetadata(
     target: Function,
     options?: InspectionOptions,
   ): ModelDefinition | {} {
-    let classDef: ModelDefinition | undefined;
-    classDef = MetadataInspector.getClassMetadata(
+    const classDef = MetadataInspector.getClassMetadata(
       MODEL_WITH_PROPERTIES_KEY,
       target,
       options,

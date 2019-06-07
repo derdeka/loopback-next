@@ -67,8 +67,9 @@ module.exports = class BaseGenerator extends Generator {
       );
     }
 
+    let jsonStr;
     try {
-      const jsonStr = await readTextFromStdin();
+      jsonStr = await readTextFromStdin();
       return JSON.parse(jsonStr);
     } catch (e) {
       if (!process.stdin.isTTY) {
@@ -190,7 +191,7 @@ module.exports = class BaseGenerator extends Generator {
 
   /**
    * Override the base prompt to skip prompts with default answers
-   * @param questions One or more questions
+   * @param questions - One or more questions
    */
   async prompt(questions) {
     // Normalize the questions to be an array

@@ -36,6 +36,7 @@ import {isTypeResolver, resolveType} from '../type-resolver';
 import {EntityCrudRepository} from './repository';
 
 export namespace juggler {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   export import DataSource = legacy.DataSource;
   export import ModelBase = legacy.ModelBase;
   export import ModelBaseClass = legacy.ModelBaseClass;
@@ -58,24 +59,23 @@ function isModelClass(
 /**
  * This is a bridge to the legacy DAO class. The function mixes DAO methods
  * into a model class and attach it to a given data source
- * @param modelClass {} Model class
- * @param ds {DataSource} Data source
+ * @param modelClass - Model class
+ * @param ds - Data source
  * @returns {} The new model class with DAO (CRUD) operations
  */
 export function bindModel<T extends juggler.ModelBaseClass>(
   modelClass: T,
   ds: juggler.DataSource,
 ): T {
-  const boundModelClass = class extends modelClass {};
-  boundModelClass.attachTo(ds);
-  return boundModelClass;
+  const BoundModelClass = class extends modelClass {};
+  BoundModelClass.attachTo(ds);
+  return BoundModelClass;
 }
 
 /**
  * Ensure the value is a promise
- * @param p Promise or void
+ * @param p - Promise or void
  */
-/* tslint:disable-next-line:no-any */
 export function ensurePromise<T>(p: legacy.PromiseOrVoid<T>): Promise<T> {
   if (p && isPromiseLike(p)) {
     // Juggler uses promise-like Bluebird instead of native Promise
@@ -91,14 +91,17 @@ export function ensurePromise<T>(p: legacy.PromiseOrVoid<T>): Promise<T> {
  * Default implementation of CRUD repository using legacy juggler model
  * and data source
  */
-export class DefaultCrudRepository<T extends Entity, ID>
-  implements EntityCrudRepository<T, ID> {
+export class DefaultCrudRepository<
+  T extends Entity,
+  ID,
+  Relations extends object = {}
+> implements EntityCrudRepository<T, ID, Relations> {
   modelClass: juggler.PersistedModelClass;
 
   /**
    * Constructor of DefaultCrudRepository
-   * @param entityClass Legacy entity class
-   * @param dataSource Legacy data source
+   * @param entityClass - Legacy entity class
+   * @param dataSource - Legacy data source
    */
   constructor(
     // entityClass should have type "typeof T", but that's not supported by TSC
@@ -143,13 +146,18 @@ export class DefaultCrudRepository<T extends Entity, ID>
     // We need to convert PropertyDefinition into the definition that
     // the juggler understands
     Object.entries(definition.properties).forEach(([key, value]) => {
+      // always clone value so that we do not modify the original model definition
+      // ensures that model definitions can be reused with multiple datasources
       if (value.type === 'array' || value.type === Array) {
         value = Object.assign({}, value, {
           type: [value.itemType && this.resolvePropertyType(value.itemType)],
         });
         delete value.itemType;
+      } else {
+        value = Object.assign({}, value, {
+          type: this.resolvePropertyType(value.type),
+        });
       }
-      value.type = this.resolvePropertyType(value.type);
       properties[key] = Object.assign({}, value);
     });
     const modelClass = dataSource.createModel<juggler.PersistedModelClass>(
@@ -181,8 +189,8 @@ export class DefaultCrudRepository<T extends Entity, ID>
    *
    * Use `this.createHasManyRepositoryFactoryFor()` instead
    *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
+   * @param relationName - Name of the relation defined on the source model
+   * @param targetRepo - Target repository instance
    */
   protected _createHasManyRepositoryFactoryFor<
     Target extends Entity,
@@ -202,10 +210,12 @@ export class DefaultCrudRepository<T extends Entity, ID>
   /**
    * Function to create a constrained relation repository factory
    *
+   * @example
    * ```ts
    * class CustomerRepository extends DefaultCrudRepository<
    *   Customer,
-   *   typeof Customer.prototype.id
+   *   typeof Customer.prototype.id,
+   *   CustomerRelations
    * > {
    *   public readonly orders: HasManyRepositoryFactory<Order, typeof Customer.prototype.id>;
    *
@@ -222,8 +232,8 @@ export class DefaultCrudRepository<T extends Entity, ID>
    * }
    * ```
    *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
+   * @param relationName - Name of the relation defined on the source model
+   * @param targetRepo - Target repository instance
    */
   protected createHasManyRepositoryFactoryFor<
     Target extends Entity,
@@ -328,8 +338,8 @@ export class DefaultCrudRepository<T extends Entity, ID>
    *
    * Use `this.createBelongsToAccessorFor()` instead
    *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
+   * @param relationName - Name of the relation defined on the source model
+   * @param targetRepo - Target repository instance
    */
   protected _createBelongsToAccessorFor<Target extends Entity, TargetId>(
     relationName: string,
@@ -341,8 +351,8 @@ export class DefaultCrudRepository<T extends Entity, ID>
   /**
    * Function to create a belongs to accessor
    *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
+   * @param relationName - Name of the relation defined on the source model
+   * @param targetRepo - Target repository instance
    */
   protected createBelongsToAccessorFor<Target extends Entity, TargetId>(
     relationName: string,
@@ -373,8 +383,8 @@ export class DefaultCrudRepository<T extends Entity, ID>
   /**
    * Function to create a constrained hasOne relation repository factory
    *
-   * @param relationName Name of the relation defined on the source model
-   * @param targetRepo Target repository instance
+   * @param relationName - Name of the relation defined on the source model
+   * @param targetRepo - Target repository instance
    */
   protected createHasOneRepositoryFactoryFor<
     Target extends Entity,
@@ -413,7 +423,10 @@ export class DefaultCrudRepository<T extends Entity, ID>
     }
   }
 
-  async find(filter?: Filter<T>, options?: Options): Promise<T[]> {
+  async find(
+    filter?: Filter<T>,
+    options?: Options,
+  ): Promise<(T & Relations)[]> {
     const models = await ensurePromise(
       this.modelClass.find(filter as legacy.Filter, options),
     );
@@ -428,14 +441,18 @@ export class DefaultCrudRepository<T extends Entity, ID>
     return this.toEntity(model);
   }
 
-  async findById(id: ID, filter?: Filter<T>, options?: Options): Promise<T> {
+  async findById(
+    id: ID,
+    filter?: Filter<T>,
+    options?: Options,
+  ): Promise<T & Relations> {
     const model = await ensurePromise(
       this.modelClass.findById(id, filter as legacy.Filter, options),
     );
     if (!model) {
       throw new EntityNotFoundError(this.entityClass, id);
     }
-    return this.toEntity(model);
+    return this.toEntity<T & Relations>(model);
   }
 
   update(entity: T, options?: Options): Promise<void> {
@@ -518,11 +535,11 @@ export class DefaultCrudRepository<T extends Entity, ID>
     return ensurePromise(this.dataSource.execute(command, parameters, options));
   }
 
-  protected toEntity(model: juggler.PersistedModel): T {
-    return new this.entityClass(model.toObject()) as T;
+  protected toEntity<R extends T>(model: juggler.PersistedModel): R {
+    return new this.entityClass(model.toObject()) as R;
   }
 
-  protected toEntities(models: juggler.PersistedModel[]): T[] {
-    return models.map(m => this.toEntity(m));
+  protected toEntities<R extends T>(models: juggler.PersistedModel[]): R[] {
+    return models.map(m => this.toEntity<R>(m));
   }
 }

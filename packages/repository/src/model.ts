@@ -14,12 +14,12 @@ import {Type} from './types';
  * See https://en.wikipedia.org/wiki/Domain-driven_design#Building_blocks
  */
 
-// tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type PropertyType =
   | string
   | Function
-  | Object
+  | object
   | Type<any>
   | TypeResolver<Model>;
 
@@ -96,8 +96,8 @@ export class ModelDefinition {
 
   /**
    * Add a property
-   * @param name Property definition or name (string)
-   * @param definitionOrType Definition or property type
+   * @param name - Property definition or name (string)
+   * @param definitionOrType - Definition or property type
    */
   addProperty(
     name: string,
@@ -112,8 +112,8 @@ export class ModelDefinition {
 
   /**
    * Add a setting
-   * @param name Setting name
-   * @param value Setting value
+   * @param name - Setting name
+   * @param value - Setting value
    */
   addSetting(name: string, value: any): this {
     this.settings[name] = value;
@@ -122,7 +122,7 @@ export class ModelDefinition {
 
   /**
    * Define a new relation.
-   * @param definition The definition of the new relation.
+   * @param definition - The definition of the new relation.
    */
   addRelation(definition: RelationMetadata): this {
     this.relations[definition.name] = definition;
@@ -131,8 +131,10 @@ export class ModelDefinition {
 
   /**
    * Get an array of names of ID properties, which are specified in
-   * the model settings or properties with `id` attribute. For example,
-   * ```
+   * the model settings or properties with `id` attribute.
+   *
+   * @example
+   * ```ts
    * {
    *   settings: {
    *     id: ['id']
@@ -221,7 +223,7 @@ export abstract class Model {
     if (options && options.ignoreUnknownProperties === false) {
       obj = {};
       for (const p in this) {
-        let val = (this as AnyObject)[p];
+        const val = (this as AnyObject)[p];
         obj[p] = asObject(val, options);
       }
     } else {
@@ -252,7 +254,7 @@ export abstract class Entity extends Model implements Persistable {
   /**
    * Get the identity value for a given entity instance or entity data object.
    *
-   * @param entityOrData The data object for which to determine the identity
+   * @param entityOrData - The data object for which to determine the identity
    * value.
    */
   static getIdOf(entityOrData: AnyObject): any {
@@ -299,7 +301,7 @@ export abstract class Entity extends Model implements Persistable {
 
   /**
    * Build the where object for the given id
-   * @param id The id value
+   * @param id - The id value
    */
   static buildWhereForId(id: any) {
     const where = {} as any;

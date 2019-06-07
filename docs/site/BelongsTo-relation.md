@@ -8,6 +8,14 @@ permalink: /doc/en/lb4/BelongsTo-relation.html
 
 ## Overview
 
+{% include note.html content="
+This relation best works with databases that support foreign key
+constraints (SQL).
+Using this relation with NoSQL databases will result in unexpected behavior,
+such as the ability to create a relation with a model that does not exist. We are [working on a solution](https://github.com/strongloop/loopback-next/issues/2341) to better handle this. It is fine to use this relation with NoSQL databases for purposes such as navigating
+related models, where the referential integrity is not critical.
+" %}
+
 A `belongsTo` relation denotes a many-to-one connection of a model to another
 model through referential integrity. The referential integrity is enforced by a
 foreign key constraint on the source model which usually references a primary
@@ -59,6 +67,12 @@ export class Order extends Entity {
     super(data);
   }
 }
+
+export interface OrderRelations {
+  // describe navigational properties here
+}
+
+export type OrderWithRelations = Order & OrderRelations;
 ```
 
 The definition of the `belongsTo` relation is inferred by using the `@belongsTo`
@@ -74,6 +88,10 @@ class Order extends Entity {
   // constructor, properties, etc.
   @belongsTo(() => Customer, {keyTo: 'pk'})
   customerId: number;
+}
+
+export interface OrderRelations {
+  customer?: CustomerWithRelations;
 }
 ```
 
@@ -112,12 +130,13 @@ import {
   juggler,
   repository,
 } from '@loopback/repository';
-import {Customer, Order} from '../models';
+import {Customer, Order, OrderRelations} from '../models';
 import {CustomerRepository} from '../repositories';
 
 export class OrderRepository extends DefaultCrudRepository<
   Order,
-  typeof Order.prototype.id
+  typeof Order.prototype.id,
+  OrderRelations
 > {
   public readonly customer: BelongsToAccessor<
     Customer,
@@ -204,6 +223,13 @@ export class Category extends Entity {
     super(data);
   }
 }
+
+export interface CategoryRelations {
+  categories?: CategoryWithRelations[];
+  parent?: CategoryWithRelations;
+}
+
+export type CategoryWithRelations = Category & CategoryRelations;
 ```
 
 The `CategoryRepository` must be declared like below
@@ -211,7 +237,8 @@ The `CategoryRepository` must be declared like below
 ```ts
 export class CategoryRepository extends DefaultCrudRepository<
   Category,
-  typeof Category.prototype.id
+  typeof Category.prototype.id,
+  CategoryRelations
 > {
   public readonly parent: BelongsToAccessor<
     Category,

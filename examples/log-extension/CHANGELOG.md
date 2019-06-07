@@ -3,6 +3,97 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.2.0...@loopback/example-log-extension@1.2.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+# [1.2.0](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.20...@loopback/example-log-extension@1.2.0) (2019-06-03)
+
+
+### Features
+
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.1.20](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.19...@loopback/example-log-extension@1.1.20) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.19](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.18...@loopback/example-log-extension@1.1.19) (2019-05-30)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.18](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.17...@loopback/example-log-extension@1.1.18) (2019-05-23)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.17](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.16...@loopback/example-log-extension@1.1.17) (2019-05-14)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.16](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.15...@loopback/example-log-extension@1.1.16) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.15](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.14...@loopback/example-log-extension@1.1.15) (2019-05-09)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.14](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.13...@loopback/example-log-extension@1.1.14) (2019-05-06)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.13](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.12...@loopback/example-log-extension@1.1.13) (2019-04-26)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
+## [1.1.12](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.11...@loopback/example-log-extension@1.1.12) (2019-04-20)
+
+**Note:** Version bump only for package @loopback/example-log-extension
+
+
+
+
+
 ## [1.1.11](https://github.com/strongloop/loopback-next/compare/@loopback/example-log-extension@1.1.10...@loopback/example-log-extension@1.1.11) (2019-04-11)
 
 **Note:** Version bump only for package @loopback/example-log-extension

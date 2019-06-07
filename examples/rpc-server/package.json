@@ -1,6 +1,6 @@
 {
   "name": "@loopback/example-rpc-server",
-  "version": "1.1.10",
+  "version": "1.2.1",
   "description": "A basic RPC server using a made-up protocol.",
   "keywords": [
     "loopback-application",
@@ -14,13 +14,13 @@
     "build": "lb-tsc es2017 --outDir dist",
     "build:watch": "lb-tsc es2017 --outDir dist --watch",
     "clean": "lb-clean dist",
-    "lint": "npm run prettier:check && npm run tslint",
-    "lint:fix": "npm run tslint:fix && npm run prettier:fix",
+    "lint": "npm run prettier:check && npm run eslint",
+    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "prettier:cli": "lb-prettier \"**/*.ts\"",
     "prettier:check": "npm run prettier:cli -- -l",
     "prettier:fix": "npm run prettier:cli -- --write",
-    "tslint": "lb-tslint",
-    "tslint:fix": "npm run tslint -- --fix",
+    "eslint": "lb-eslint --report-unused-disable-directives .",
+    "eslint:fix": "npm run eslint -- --fix",
     "pretest": "npm run clean && npm run build",
     "test": "lb-mocha \"dist/__tests__/**/*.js\"",
     "posttest": "npm run lint",
@@ -38,18 +38,23 @@
   "author": "IBM Corp.",
   "license": "MIT",
   "dependencies": {
-    "@loopback/context": "^1.11.0",
-    "@loopback/core": "^1.4.1",
-    "express": "^4.16.3",
+    "@loopback/context": "^1.19.0",
+    "@loopback/core": "^1.8.1",
+    "express": "^4.17.0",
     "p-event": "^4.1.0"
   },
   "devDependencies": {
-    "@loopback/build": "^1.4.3",
-    "@loopback/testlab": "^1.2.4",
-    "@loopback/tslint-config": "^2.0.4",
+    "@loopback/build": "^1.7.1",
+    "@loopback/eslint-config": "^1.1.1",
+    "@loopback/testlab": "^1.5.0",
     "@types/express": "^4.11.1",
     "@types/node": "^10.11.2",
-    "tslint": "^5.15.0",
-    "typescript": "^3.4.3"
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-eslint-plugin": "^2.1.0",
+    "eslint-plugin-mocha": "^5.3.0",
+    "typescript": "~3.5.1"
   }
 }

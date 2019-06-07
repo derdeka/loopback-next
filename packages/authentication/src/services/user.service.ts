@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2019. All Rights Reserved.
+// Node module: @loopback/authentication
+// This file is licensed under the MIT License.
+// License text available at https://opensource.org/licenses/MIT
+
 import {UserProfile} from '../types';
 
 /**
@@ -50,6 +55,7 @@ export interface UserService<U, C> {
    * Verify the identity of a user, construct a corresponding user profile using
    * the user information and return the user profile.
    *
+   * @example
    * A pseudo code for basic authentication:
    * ```ts
    * verifyCredentials(credentials: C): Promise<U> {
@@ -78,7 +84,7 @@ export interface UserService<U, C> {
    *   }
    * };
    * ```
-   * @param credentials Credentials for basic auth or configurations for 3rd party.
+   * @param credentials - Credentials for basic auth or configurations for 3rd party.
    *                    Example see the
    */
   verifyCredentials(credentials: C): Promise<U>;
@@ -86,7 +92,7 @@ export interface UserService<U, C> {
   /**
    * Convert the user returned by `verifyCredentials()` to a common
    * user profile that describes a user in your application
-   * @param user The user returned from `verifyCredentials()`
+   * @param user - The user returned from `verifyCredentials()`
    */
   convertToUserProfile(user: U): UserProfile;
 }

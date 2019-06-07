@@ -16,7 +16,6 @@ import {HttpCachingProxy, ProxyOptions} from '../../http-caching-proxy';
 
 const CACHE_DIR = path.join(__dirname, '.cache');
 
-// tslint:disable:await-promise
 const rimraf = util.promisify(rimrafCb);
 
 describe('HttpCachingProxy', () => {
@@ -41,7 +40,7 @@ describe('HttpCachingProxy', () => {
 
   it('proxies HTTP requests', async function() {
     // Increase the timeout to accomodate slow network connections
-    // tslint:disable-next-line:no-invalid-this
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
     await givenRunningProxy();
@@ -57,7 +56,7 @@ describe('HttpCachingProxy', () => {
 
   it('proxies HTTPs requests (no tunneling)', async function() {
     // Increase the timeout to accomodate slow network connections
-    // tslint:disable-next-line:no-invalid-this
+    // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
     await givenRunningProxy();

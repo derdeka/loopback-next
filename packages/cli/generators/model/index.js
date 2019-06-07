@@ -6,7 +6,6 @@
 'use strict';
 
 const modelDiscoverer = require('../../lib/model-discoverer');
-const fs = require('fs');
 
 const ArtifactGenerator = require('../../lib/artifact-generator');
 const debug = require('../../lib/debug')('model-generator');
@@ -71,7 +70,6 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
 
     this.artifactInfo.properties = {};
     this.artifactInfo.modelSettings = {};
-    this.propCounter = 0;
 
     this.artifactInfo.modelDir = path.resolve(
       this.artifactInfo.rootDir,
@@ -151,8 +149,7 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
   async discoverModelPropertiesWithDatasource() {
     if (this.shouldExit()) return false;
     if (!this.options.dataSource) return;
-    if (!this.artifactInfo.dataSource) {
-    }
+    if (!this.artifactInfo.dataSource) return;
 
     const schemaDef = await modelDiscoverer.discoverSingleModel(
       this.artifactInfo.dataSource,
@@ -316,13 +313,13 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
   isValidBaseClass(availableModelBaseClasses, classname, isClassNameNullable) {
     if (!classname && !isClassNameNullable) return false;
 
-    for (var i in availableModelBaseClasses) {
-      var baseClass = '';
+    for (const i in availableModelBaseClasses) {
+      let baseClass = '';
       if (typeof availableModelBaseClasses[i] == 'object')
         baseClass = availableModelBaseClasses[i].value;
       else baseClass = availableModelBaseClasses[i];
 
-      if (classname == baseClass) {
+      if (classname === baseClass) {
         return true;
       }
     }
@@ -512,6 +509,12 @@ module.exports = class ModelGenerator extends ArtifactGenerator {
         delete val.id;
       }
     });
+
+    if (this.artifactInfo.modelSettings) {
+      this.artifactInfo.modelSettings = utils.stringifyModelSettings(
+        this.artifactInfo.modelSettings,
+      );
+    }
 
     this.copyTemplatedFiles(
       this.templatePath(MODEL_TEMPLATE_PATH),

@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-//tslint:disable:no-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // These utilities are introduced to mitigate the prototype pollution issue
 // with `JSON.parse`.
@@ -15,7 +15,7 @@
 
 /**
  * Factory to create a reviver function for `JSON.parse` to sanitize keys
- * @param reviver Reviver function
+ * @param reviver - Reviver function
  */
 export function sanitizeJsonParse(reviver?: (key: any, value: any) => any) {
   return (key: string, value: any) => {
@@ -31,8 +31,8 @@ export function sanitizeJsonParse(reviver?: (key: any, value: any) => any) {
 
 /**
  *
- * @param text JSON string
- * @param reviver Optional reviver function for `JSON.parse`
+ * @param text - JSON string
+ * @param reviver - Optional reviver function for `JSON.parse`
  */
 export function parseJson(
   text: string,

@@ -3,13 +3,13 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {expect} from '@loopback/testlab';
 import {Context, instantiateClass} from '@loopback/context';
 import {Request} from '@loopback/rest';
-import {AuthenticateFn, UserProfile, AuthenticationBindings} from '../../..';
-import {MockStrategy} from '../fixtures/mock-strategy';
-import {Strategy} from 'passport';
+import {expect} from '@loopback/testlab';
+import {AuthenticateFn, AuthenticationBindings, UserProfile} from '../../..';
 import {AuthenticateActionProvider} from '../../../providers';
+import {AuthenticationStrategy} from '../../../types';
+import {MockStrategy} from '../fixtures/mock-strategy';
 
 describe('AuthenticateActionProvider', () => {
   describe('constructor()', () => {
@@ -65,9 +65,11 @@ describe('AuthenticateActionProvider', () => {
         expect(user).to.be.equal(mockUser);
       });
 
-      it('throws an error if the injected passport strategy is not valid', async () => {
+      it('throws an error if the injected strategy is not valid', async () => {
         const context: Context = new Context();
-        context.bind(AuthenticationBindings.STRATEGY).to({} as Strategy);
+        context
+          .bind(AuthenticationBindings.STRATEGY)
+          .to({} as AuthenticationStrategy);
         context
           .bind(AuthenticationBindings.AUTH_ACTION)
           .toProvider(AuthenticateActionProvider);
@@ -81,7 +83,10 @@ describe('AuthenticateActionProvider', () => {
         } catch (exception) {
           error = exception;
         }
-        expect(error).to.have.property('message', 'invalid strategy parameter');
+        expect(error).to.have.property(
+          'message',
+          'strategy.authenticate is not a function',
+        );
       });
 
       it('throws Unauthorized error when authentication fails', async () => {

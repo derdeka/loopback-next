@@ -5,13 +5,17 @@
 
 import {expect} from '@loopback/testlab';
 import {
+  Binding,
+  BindingCreationPolicy,
   BindingKey,
   BindingScope,
+  config,
   Constructor,
   Context,
   Getter,
   inject,
   Injection,
+  instantiateClass,
   invokeMethod,
   Provider,
   ResolutionSession,
@@ -90,7 +94,6 @@ describe('Context bindings - Injecting dependencies of classes', () => {
     expect(instance).to.have.property('isAuthenticated', false);
   });
 
-  // tslint:disable-next-line:max-line-length
   it('creates instance synchronously when all dependencies are sync too', () => {
     ctx.bind('appName').to('CodeHub');
     class InfoController {
@@ -124,7 +127,6 @@ describe('Context bindings - Injecting dependencies of classes', () => {
     expect(instance).to.have.property('isAuthenticated', false);
   });
 
-  // tslint:disable-next-line:max-line-length
   it('creates instance synchronously when property/constructor dependencies are sync too', () => {
     ctx.bind('appName').to('CodeHub');
     ctx.bind('authenticated').to(false);
@@ -167,6 +169,25 @@ describe('Context bindings - Injecting dependencies of classes', () => {
     // rebind the value to verify that getter always returns a fresh value
     ctx.bind(HASH_KEY).to('456');
     expect(await store.getter()).to.equal('456');
+  });
+
+  it('creates getter from a value', () => {
+    const getter = Getter.fromValue('data');
+    expect(getter).to.be.a.Function();
+    return expect(getter()).to.be.fulfilledWith('data');
+  });
+
+  it('reports an error if @inject.getter has a non-function target', async () => {
+    ctx.bind('key').to('value');
+
+    class Store {
+      constructor(@inject.getter('key') public getter: string) {}
+    }
+
+    ctx.bind(STORE_KEY).toClass(Store);
+    expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
+      'The type of Store.constructor[0] (String) is not Getter function',
+    );
   });
 
   describe('in SINGLETON scope', () => {
@@ -317,61 +338,230 @@ describe('Context bindings - Injecting dependencies of classes', () => {
     }
   });
 
-  it('injects a setter function', async () => {
+  describe('@inject.setter', () => {
     class Store {
       constructor(@inject.setter(HASH_KEY) public setter: Setter<string>) {}
     }
 
-    ctx.bind(STORE_KEY).toClass(Store);
-    const store = ctx.getSync<Store>(STORE_KEY);
+    it('injects a setter function', () => {
+      ctx.bind(STORE_KEY).toClass(Store);
+      const store = ctx.getSync<Store>(STORE_KEY);
 
-    expect(store.setter).to.be.Function();
-    store.setter('a-value');
-    expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
-  });
+      expect(store.setter).to.be.Function();
+      store.setter('a-value');
+      expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
+    });
 
-  it('creates getter from a value', () => {
-    const getter = Getter.fromValue('data');
-    expect(getter).to.be.a.Function();
-    return expect(getter()).to.be.fulfilledWith('data');
-  });
+    it('injects a setter function that uses an existing binding', () => {
+      // Create a binding for hash key
+      ctx
+        .bind(HASH_KEY)
+        .to('123')
+        .tag('hash');
+      ctx.bind(STORE_KEY).toClass(Store);
+      const store = ctx.getSync<Store>(STORE_KEY);
+      // Change the hash value
+      store.setter('a-value');
+      expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
+      // The tag is kept
+      expect(ctx.getBinding(HASH_KEY).tagNames).to.containEql('hash');
+    });
 
-  it('reports an error if @inject.getter has a non-function target', async () => {
-    ctx.bind('key').to('value');
+    it('reports an error if @inject.setter has a non-function target', () => {
+      class StoreWithWrongSetterType {
+        constructor(@inject.setter(HASH_KEY) public setter: object) {}
+      }
 
-    class Store {
-      constructor(@inject.getter('key') public getter: string) {}
-    }
+      ctx.bind('key').to('value');
 
-    ctx.bind(STORE_KEY).toClass(Store);
-    expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
-      'The type of Store.constructor[0] (String) is not a Getter function',
-    );
-  });
+      ctx.bind(STORE_KEY).toClass(StoreWithWrongSetterType);
+      expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
+        'The type of StoreWithWrongSetterType.constructor[0] (Object) is not Setter function',
+      );
+    });
 
-  it('reports an error if @inject.setter has a non-function target', async () => {
-    ctx.bind('key').to('value');
+    describe('bindingCreation option', () => {
+      it('supports ALWAYS_CREATE', () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.ALWAYS_CREATE));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        store.setter('a-value');
+        const binding1 = ctx.getBinding(HASH_KEY);
+        store.setter('b-value');
+        const binding2 = ctx.getBinding(HASH_KEY);
+        expect(binding1).to.not.exactly(binding2);
+      });
 
-    class Store {
-      constructor(@inject.setter('key') public setter: object) {}
-    }
+      it('supports NEVER_CREATE - throws if not bound', () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.NEVER_CREATE));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        expect(() => store.setter('a-value')).to.throw(
+          /The key 'hash' is not bound to any value in context/,
+        );
+      });
 
-    ctx.bind(STORE_KEY).toClass(Store);
-    expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
-      'The type of Store.constructor[0] (Object) is not a Setter function',
-    );
+      it('supports NEVER_CREATE with an existing binding', () => {
+        // Create a binding for hash key
+        const hashBinding = ctx
+          .bind(HASH_KEY)
+          .to('123')
+          .tag('hash');
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.NEVER_CREATE));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        store.setter('a-value');
+        expect(ctx.getBinding(HASH_KEY)).to.exactly(hashBinding);
+        expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
+      });
+
+      it('supports CREATE_IF_NOT_BOUND without an existing binding', async () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.CREATE_IF_NOT_BOUND));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        store.setter('a-value');
+        expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
+      });
+
+      it('supports CREATE_IF_NOT_BOUND with an existing binding', () => {
+        // Create a binding for hash key
+        const hashBinding = ctx
+          .bind(HASH_KEY)
+          .to('123')
+          .tag('hash');
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.CREATE_IF_NOT_BOUND));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        store.setter('a-value');
+        expect(ctx.getBinding(HASH_KEY)).to.exactly(hashBinding);
+        expect(ctx.getSync(HASH_KEY)).to.equal('a-value');
+      });
+
+      function givenStoreClass(bindingCreation?: BindingCreationPolicy) {
+        class StoreWithInjectSetterMetadata {
+          constructor(
+            @inject.setter(HASH_KEY, {bindingCreation})
+            public setter: Setter<string>,
+          ) {}
+        }
+        return StoreWithInjectSetterMetadata;
+      }
+    });
   });
 
   it('injects a nested property', async () => {
     class TestComponent {
-      constructor(@inject('config#test') public config: string) {}
+      constructor(@inject('config#test') public configForTest: string) {}
     }
 
     ctx.bind('config').to({test: 'test-config'});
     ctx.bind('component').toClass(TestComponent);
 
     const resolved = await ctx.get<TestComponent>('component');
-    expect(resolved.config).to.equal('test-config');
+    expect(resolved.configForTest).to.equal('test-config');
+  });
+
+  describe('@inject.binding', () => {
+    class Store {
+      constructor(@inject.binding(HASH_KEY) public binding: Binding<string>) {}
+    }
+
+    it('injects a binding', () => {
+      ctx.bind(STORE_KEY).toClass(Store);
+      const store = ctx.getSync<Store>(STORE_KEY);
+      expect(store.binding).to.be.instanceOf(Binding);
+    });
+
+    it('injects a binding that exists', () => {
+      // Create a binding for hash key
+      const hashBinding = ctx
+        .bind(HASH_KEY)
+        .to('123')
+        .tag('hash');
+      ctx.bind(STORE_KEY).toClass(Store);
+      const store = ctx.getSync<Store>(STORE_KEY);
+      expect(store.binding).to.be.exactly(hashBinding);
+    });
+
+    it('reports an error if @inject.binding has a wrong target type', () => {
+      class StoreWithWrongBindingType {
+        constructor(@inject.binding(HASH_KEY) public binding: object) {}
+      }
+
+      ctx.bind(STORE_KEY).toClass(StoreWithWrongBindingType);
+      expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
+        'The type of StoreWithWrongBindingType.constructor[0] (Object) is not Binding',
+      );
+    });
+
+    describe('bindingCreation option', () => {
+      it('supports ALWAYS_CREATE', () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.ALWAYS_CREATE));
+        const binding1 = ctx.getSync<Store>(STORE_KEY).binding;
+        const binding2 = ctx.getSync<Store>(STORE_KEY).binding;
+        expect(binding1).to.not.be.exactly(binding2);
+      });
+
+      it('supports NEVER_CREATE - throws if not bound', () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.NEVER_CREATE));
+        expect(() => ctx.getSync<Store>(STORE_KEY)).to.throw(
+          /The key 'hash' is not bound to any value in context/,
+        );
+      });
+
+      it('supports NEVER_CREATE with an existing binding', () => {
+        // Create a binding for hash key
+        const hashBinding = ctx
+          .bind(HASH_KEY)
+          .to('123')
+          .tag('hash');
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.NEVER_CREATE));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        expect(store.binding).to.be.exactly(hashBinding);
+      });
+
+      it('supports CREATE_IF_NOT_BOUND without an existing binding', async () => {
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.CREATE_IF_NOT_BOUND));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        expect(store.binding).to.be.instanceOf(Binding);
+      });
+
+      it('supports CREATE_IF_NOT_BOUND with an existing binding', () => {
+        // Create a binding for hash key
+        const hashBinding = ctx
+          .bind(HASH_KEY)
+          .to('123')
+          .tag('hash');
+        ctx
+          .bind(STORE_KEY)
+          .toClass(givenStoreClass(BindingCreationPolicy.CREATE_IF_NOT_BOUND));
+        const store = ctx.getSync<Store>(STORE_KEY);
+        expect(store.binding).to.be.exactly(hashBinding);
+      });
+
+      function givenStoreClass(bindingCreation?: BindingCreationPolicy) {
+        class StoreWithInjectBindingMetadata {
+          constructor(
+            @inject.binding(HASH_KEY, {bindingCreation})
+            public binding: Binding<string>,
+          ) {}
+        }
+        return StoreWithInjectBindingMetadata;
+      }
+    });
   });
 
   it('injects context with @inject.context', () => {
@@ -447,7 +637,7 @@ describe('Context bindings - Injecting dependencies of classes', () => {
     expect(store.locations).to.eql(['San Francisco', 'San Jose']);
   });
 
-  it('injects values by tag asynchronously', async () => {
+  it('reports correct resolution path when injecting values by tag', async () => {
     class Store {
       constructor(@inject.tag('store:location') public locations: string[]) {}
     }
@@ -501,6 +691,168 @@ describe('Context bindings - Injecting dependencies of classes', () => {
       .toDynamicValue(() => Promise.reject(new Error('Bad')))
       .tag('store:location');
     await expect(ctx.get(STORE_KEY)).to.be.rejectedWith('Bad');
+  });
+
+  it('injects a config property', () => {
+    class Store {
+      constructor(
+        @config('x') public optionX: number,
+        @config('y') public optionY: string,
+      ) {}
+    }
+
+    ctx.configure('store').to({x: 1, y: 'a'});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.optionX).to.eql(1);
+    expect(store.optionY).to.eql('a');
+  });
+
+  it('injects a config property with promise value', async () => {
+    class Store {
+      constructor(@config('x') public optionX: number) {}
+    }
+
+    ctx.configure('store').toDynamicValue(() => Promise.resolve({x: 1}));
+    ctx.bind('store').toClass(Store);
+    const store = await ctx.get<Store>('store');
+    expect(store.optionX).to.eql(1);
+  });
+
+  it('injects a config property with a binding provider', async () => {
+    class MyConfigProvider implements Provider<{}> {
+      constructor(@inject('prefix') private prefix: string) {}
+      value() {
+        return {
+          myOption: this.prefix + 'my-option',
+        };
+      }
+    }
+
+    class Store {
+      constructor(@config('myOption') public myOption: string) {}
+    }
+
+    ctx.bind('config').toProvider(MyConfigProvider);
+    ctx.configure('store').toProvider(MyConfigProvider);
+    ctx.bind('prefix').to('hello-');
+    ctx.bind('store').toClass(Store);
+
+    const store = await ctx.get<Store>('store');
+    expect(store.myOption).to.eql('hello-my-option');
+  });
+
+  it('injects a config property with a rejected promise', async () => {
+    class Store {
+      constructor(@config('x') public optionX: number) {}
+    }
+
+    ctx
+      .configure('store')
+      .toDynamicValue(() => Promise.reject(Error('invalid')));
+
+    ctx.bind('store').toClass(Store);
+
+    await expect(ctx.get('store')).to.be.rejectedWith('invalid');
+  });
+
+  it('injects a config property with nested property', () => {
+    class Store {
+      constructor(@config('x.y') public optionXY: string) {}
+    }
+
+    ctx.configure('store').to({x: {y: 'y'}});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.optionXY).to.eql('y');
+  });
+
+  it('injects config if the configPath is not present', () => {
+    class Store {
+      constructor(@config() public configObj: object) {}
+    }
+
+    ctx.configure('store').to({x: 1, y: 'a'});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.configObj).to.eql({x: 1, y: 'a'});
+  });
+
+  it("injects config if the configPath is ''", () => {
+    class Store {
+      constructor(@config('') public configObj: object) {}
+    }
+
+    ctx.configure('store').to({x: 1, y: 'a'});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.configObj).to.eql({x: 1, y: 'a'});
+  });
+
+  it('injects config with configPath', () => {
+    class Store {
+      constructor(@config('x') public optionX: number) {}
+    }
+
+    ctx.configure('store').to({x: 1, y: 'a'});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.optionX).to.eql(1);
+  });
+
+  it('injects undefined option if configPath not found', () => {
+    class Store {
+      constructor(@config('not-exist') public option: string | undefined) {}
+    }
+
+    ctx.configure('store').to({x: 1, y: 'a'});
+    ctx.bind('store').toClass(Store);
+    const store: Store = ctx.getSync('store');
+    expect(store.option).to.be.undefined();
+  });
+
+  it('injects a config property for different bindings with the same class', async () => {
+    class Store {
+      constructor(
+        @config('x') public optionX: number,
+        @config('y') public optionY: string,
+      ) {}
+    }
+
+    ctx.configure('store1').to({x: 1, y: 'a'});
+    ctx.configure('store2').to({x: 2, y: 'b'});
+
+    ctx.bind('store1').toClass(Store);
+    ctx.bind('store2').toClass(Store);
+
+    const store1 = await ctx.get<Store>('store1');
+    expect(store1.optionX).to.eql(1);
+    expect(store1.optionY).to.eql('a');
+
+    const store2 = await ctx.get<Store>('store2');
+    expect(store2.optionX).to.eql(2);
+    expect(store2.optionY).to.eql('b');
+  });
+
+  it('injects undefined config if no binding is present', async () => {
+    class Store {
+      constructor(@config('x') public settings: object | undefined) {}
+    }
+
+    const store = await instantiateClass(Store, ctx);
+    expect(store.settings).to.be.undefined();
+  });
+
+  it('injects config from config binding', () => {
+    class MyStore {
+      constructor(@config('x') public optionX: number) {}
+    }
+
+    ctx.configure('stores.MyStore').to({x: 1, y: 'a'});
+    ctx.bind('stores.MyStore').toClass(MyStore);
+
+    const store: MyStore = ctx.getSync('stores.MyStore');
+    expect(store.optionX).to.eql(1);
   });
 
   function createContext() {

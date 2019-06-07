@@ -3,32 +3,32 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Entity, ValueObject, Model} from '../model';
 import {
-  DataObject,
-  Options,
   AnyObject,
   Command,
-  NamedParameters,
-  PositionalParameters,
   Count,
+  DataObject,
+  NamedParameters,
+  Options,
+  PositionalParameters,
 } from '../common-types';
-import {DataSource} from '../datasource';
 import {CrudConnector} from '../connectors';
-import {Filter, Where} from '../query';
+import {DataSource} from '../datasource';
 import {EntityNotFoundError} from '../errors';
+import {Entity, Model, ValueObject} from '../model';
+import {Filter, Where} from '../query';
 
-// tslint:disable:no-unused
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 export interface Repository<T extends Model> {}
 
 export interface ExecutableRepository<T extends Model> extends Repository<T> {
   /**
    * Execute a query with the given parameter object or an array of parameters
-   * @param command The query string or command object
-   * @param parameters The object with name/value pairs or an array of parameter
+   * @param command - The query string or command object
+   * @param parameters - The object with name/value pairs or an array of parameter
    * values
-   * @param options Options
+   * @param options - Options
    */
   execute(
     command: Command,
@@ -40,37 +40,39 @@ export interface ExecutableRepository<T extends Model> extends Repository<T> {
 /**
  * Basic CRUD operations for ValueObject and Entity. No ID is required.
  */
-export interface CrudRepository<T extends ValueObject | Entity>
-  extends Repository<T> {
+export interface CrudRepository<
+  T extends ValueObject | Entity,
+  Relations extends object = {}
+> extends Repository<T> {
   /**
    * Create a new record
-   * @param dataObject The data to be created
-   * @param options Options for the operations
+   * @param dataObject - The data to be created
+   * @param options - Options for the operations
    * @returns A promise of record created
    */
   create(dataObject: DataObject<T>, options?: Options): Promise<T>;
 
   /**
    * Create all records
-   * @param dataObjects An array of data to be created
-   * @param options Options for the operations
+   * @param dataObjects - An array of data to be created
+   * @param options - Options for the operations
    * @returns A promise of an array of records created
    */
   createAll(dataObjects: DataObject<T>[], options?: Options): Promise<T[]>;
 
   /**
    * Find matching records
-   * @param filter Query filter
-   * @param options Options for the operations
+   * @param filter - Query filter
+   * @param options - Options for the operations
    * @returns A promise of an array of records found
    */
-  find(filter?: Filter<T>, options?: Options): Promise<T[]>;
+  find(filter?: Filter<T>, options?: Options): Promise<(T & Relations)[]>;
 
   /**
    * Updating matching records with attributes from the data object
-   * @param dataObject The data to be updated
-   * @param where Matching criteria
-   * @param options Options for the operations
+   * @param dataObject - The data to be updated
+   * @param where - Matching criteria
+   * @param options - Options for the operations
    * @returns A promise of number of records updated
    */
   updateAll(
@@ -81,16 +83,16 @@ export interface CrudRepository<T extends ValueObject | Entity>
 
   /**
    * Delete matching records
-   * @param where Matching criteria
-   * @param options Options for the operations
+   * @param where - Matching criteria
+   * @param options - Options for the operations
    * @returns A promise of number of records deleted
    */
   deleteAll(where?: Where<T>, options?: Options): Promise<Count>;
 
   /**
    * Count matching records
-   * @param where Matching criteria
-   * @param options Options for the operations
+   * @param where - Matching criteria
+   * @param options - Options for the operations
    * @returns A promise of number of records matched
    */
   count(where?: Where<T>, options?: Options): Promise<Count>;
@@ -105,16 +107,18 @@ export interface EntityRepository<T extends Entity, ID>
 /**
  * CRUD operations for a repository of entities
  */
-export interface EntityCrudRepository<T extends Entity, ID>
-  extends EntityRepository<T, ID>,
-    CrudRepository<T> {
+export interface EntityCrudRepository<
+  T extends Entity,
+  ID,
+  Relations extends object = {}
+> extends EntityRepository<T, ID>, CrudRepository<T, Relations> {
   // entityClass should have type "typeof T", but that's not supported by TSC
   entityClass: typeof Entity & {prototype: T};
 
   /**
    * Save an entity. If no id is present, create a new entity
-   * @param entity Entity to be saved
-   * @param options Options for the operations
+   * @param entity - Entity to be saved
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -122,8 +126,8 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Update an entity
-   * @param entity Entity to be updated
-   * @param options Options for the operations
+   * @param entity - Entity to be updated
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -131,8 +135,8 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Delete an entity
-   * @param entity Entity to be deleted
-   * @param options Options for the operations
+   * @param entity - Entity to be deleted
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -140,19 +144,23 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Find an entity by id, return a rejected promise if not found.
-   * @param id Value for the entity id
-   * @param filter Additional query options. E.g. `filter.include` configures
+   * @param id - Value for the entity id
+   * @param filter - Additional query options. E.g. `filter.include` configures
    * which related models to fetch as part of the database query (or queries).
-   * @param options Options for the operations
+   * @param options - Options for the operations
    * @returns A promise of an entity found for the id
    */
-  findById(id: ID, filter?: Filter<T>, options?: Options): Promise<T>;
+  findById(
+    id: ID,
+    filter?: Filter<T>,
+    options?: Options,
+  ): Promise<T & Relations>;
 
   /**
    * Update an entity by id with property/value pairs in the data object
-   * @param id Value for the entity id
-   * @param data Data attributes to be updated
-   * @param options Options for the operations
+   * @param id - Value for the entity id
+   * @param data - Data attributes to be updated
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -160,9 +168,9 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Replace an entity by id
-   * @param id Value for the entity id
-   * @param data Data attributes to be replaced
-   * @param options Options for the operations
+   * @param id - Value for the entity id
+   * @param data - Data attributes to be replaced
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -170,8 +178,8 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Delete an entity by id
-   * @param id Value for the entity id
-   * @param options Options for the operations
+   * @param id - Value for the entity id
+   * @param options - Options for the operations
    * @returns A promise that will be resolve if the operation succeeded or will
    * be rejected if the entity was not found.
    */
@@ -179,8 +187,8 @@ export interface EntityCrudRepository<T extends Entity, ID>
 
   /**
    * Check if an entity exists for the given id
-   * @param id Value for the entity id
-   * @param options Options for the operations
+   * @param id - Value for the entity id
+   * @param options - Options for the operations
    * @returns Promise<true> if an entity exists for the id, otherwise
    * Promise<false>
    */
@@ -190,7 +198,7 @@ export interface EntityCrudRepository<T extends Entity, ID>
 /**
  * Repository implementation
  *
- * Example:
+ * @example
  *
  * User can import `CrudRepositoryImpl` and call its functions like:
  * `CrudRepositoryImpl.find(somefilters, someoptions)`
@@ -333,7 +341,6 @@ export class CrudRepositoryImpl<T extends Entity, ID>
       );
     } else {
       // FIXME: populate inst with all properties
-      // tslint:disable-next-line:no-unused
       const inst = data;
       const where = this.entityClass.buildWhereForId(id);
       const result = await this.updateAll(data, where, options);

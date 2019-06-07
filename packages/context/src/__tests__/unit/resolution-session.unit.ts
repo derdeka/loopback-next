@@ -8,7 +8,6 @@ import {Binding, inject, Injection, ResolutionSession} from '../..';
 
 describe('ResolutionSession', () => {
   class MyController {
-    // tslint:disable-next-line:no-unused
     constructor(@inject('b') private b: string) {}
   }
   function givenInjection(): Injection {

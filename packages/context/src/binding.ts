@@ -6,6 +6,8 @@
 import * as debugFactory from 'debug';
 import {BindingAddress, BindingKey} from './binding-key';
 import {Context} from './context';
+import {createProxyWithInterceptors} from './interception-proxy';
+import {ContextTags} from './keys';
 import {Provider} from './provider';
 import {
   asResolutionOptions,
@@ -124,7 +126,7 @@ export enum BindingType {
   ALIAS = 'Alias',
 }
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TagMap = MapObject<any>;
 
 /**
@@ -186,15 +188,15 @@ export class Binding<T = BoundValue> {
     return this._valueConstructor;
   }
 
-  constructor(key: string, public isLocked: boolean = false) {
+  constructor(key: BindingAddress<T>, public isLocked: boolean = false) {
     BindingKey.validate(key);
-    this.key = key;
+    this.key = key.toString();
   }
 
   /**
    * Cache the resolved value by the binding scope
-   * @param ctx The current context
-   * @param result The calculated value for the binding
+   * @param ctx - The current context
+   * @param result - The calculated value for the binding
    */
   private _cacheValue(
     ctx: Context,
@@ -233,9 +235,10 @@ export class Binding<T = BoundValue> {
    *  - the bound value
    *  - a promise of the bound value
    *
-   * Consumers wishing to consume sync values directly should use `isPromise`
+   * Consumers wishing to consume sync values directly should use `isPromiseLike`
    * to check the type of the returned value to decide how to handle it.
    *
+   * @example
    * ```
    * const result = binding.getValue(ctx);
    * if (isPromiseLike(result)) {
@@ -245,8 +248,8 @@ export class Binding<T = BoundValue> {
    * }
    * ```
    *
-   * @param ctx Context for the resolution
-   * @param session Optional session for binding and dependency resolution
+   * @param ctx - Context for the resolution
+   * @param session - Optional session for binding and dependency resolution
    */
   getValue(ctx: Context, session?: ResolutionSession): ValueOrPromise<T>;
 
@@ -254,8 +257,8 @@ export class Binding<T = BoundValue> {
    * Returns a value or promise for this binding in the given context. The
    * resolved value can be `undefined` if `optional` is set to `true` in
    * `options`.
-   * @param ctx Context for the resolution
-   * @param options Optional options for binding and dependency resolution
+   * @param ctx - Context for the resolution
+   * @param options - Optional options for binding and dependency resolution
    */
   getValue(
     ctx: Context,
@@ -286,7 +289,7 @@ export class Binding<T = BoundValue> {
     }
     const options = asResolutionOptions(optionsOrSession);
     if (this._getValue) {
-      let result = ResolutionSession.runWithBinding(
+      const result = ResolutionSession.runWithBinding(
         s => {
           const optionsWithSession = Object.assign({}, options, {session: s});
           return this._getValue(ctx, optionsWithSession);
@@ -296,11 +299,16 @@ export class Binding<T = BoundValue> {
       );
       return this._cacheValue(ctx, result);
     }
+    // `@inject.binding` adds a binding without _getValue
+    if (options.optional) return undefined;
     return Promise.reject(
       new Error(`No value was configured for binding ${this.key}.`),
     );
   }
 
+  /**
+   * Lock the binding so that it cannot be rebound
+   */
   lock(): this {
     this.isLocked = true;
     return this;
@@ -310,7 +318,7 @@ export class Binding<T = BoundValue> {
    * Tag the binding with names or name/value objects. A tag has a name and
    * an optional value. If not supplied, the tag name is used as the value.
    *
-   * @param tags A list of names or name/value objects. Each
+   * @param tags - A list of names or name/value objects. Each
    * parameter can be in one of the following forms:
    * - string: A tag name without value
    * - string[]: An array of tag names
@@ -356,7 +364,7 @@ export class Binding<T = BoundValue> {
 
   /**
    * Set the binding scope
-   * @param scope Binding scope
+   * @param scope - Binding scope
    */
   inScope(scope: BindingScope): this {
     if (this._scope !== scope) this._clearCache();
@@ -367,7 +375,7 @@ export class Binding<T = BoundValue> {
   /**
    * Apply default scope to the binding. It only changes the scope if it's not
    * set yet
-   * @param scope Default binding scope
+   * @param scope - Default binding scope
    */
   applyDefaultScope(scope: BindingScope): this {
     if (!this._scope) {
@@ -378,19 +386,28 @@ export class Binding<T = BoundValue> {
 
   /**
    * Set the `_getValue` function
-   * @param getValue getValue function
+   * @param getValue - getValue function
    */
   private _setValueGetter(getValue: ValueGetter<T>) {
     // Clear the cache
     this._clearCache();
-    this._getValue = getValue;
+    this._getValue = (ctx: Context, options: ResolutionOptions) => {
+      if (options.asProxyWithInterceptors && this._type !== BindingType.CLASS) {
+        throw new Error(
+          `Binding '${this.key}' (${
+            this._type
+          }) does not support 'asProxyWithInterceptors'`,
+        );
+      }
+      return getValue(ctx, options);
+    };
   }
 
   /**
    * Bind the key to a constant value. The value must be already available
    * at binding time, it is not allowed to pass a Promise instance.
    *
-   * @param value The bound value.
+   * @param value - The bound value.
    *
    * @example
    *
@@ -432,7 +449,7 @@ export class Binding<T = BoundValue> {
   /**
    * Bind the key to a computed (dynamic) value.
    *
-   * @param factoryFn The factory function creating the value.
+   * @param factoryFn - The factory function creating the value.
    *   Both sync and async functions are supported.
    *
    * @example
@@ -471,7 +488,7 @@ export class Binding<T = BoundValue> {
    * }
    * ```
    *
-   * @param provider The value provider to use.
+   * @param provider - The value provider to use.
    */
   toProvider(providerClass: Constructor<Provider<T>>): this {
     /* istanbul ignore if */
@@ -493,7 +510,7 @@ export class Binding<T = BoundValue> {
   /**
    * Bind the key to an instance of the given class.
    *
-   * @param ctor The class constructor to call. Any constructor
+   * @param ctor - The class constructor to call. Any constructor
    *   arguments must be annotated with `@inject` so that
    *   we can resolve them from the context.
    */
@@ -503,16 +520,18 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to class %s', this.key, ctor.name);
     }
     this._type = BindingType.CLASS;
-    this._setValueGetter((ctx, options) =>
-      instantiateClass(ctor, ctx, options.session),
-    );
+    this._setValueGetter((ctx, options) => {
+      const instOrPromise = instantiateClass(ctor, ctx, options.session);
+      if (!options.asProxyWithInterceptors) return instOrPromise;
+      return createInterceptionProxyFromInstance(instOrPromise, ctx);
+    });
     this._valueConstructor = ctor;
     return this;
   }
 
   /**
    * Bind the key to an alias of another binding
-   * @param keyWithPath Target binding key with optional path,
+   * @param keyWithPath - Target binding key with optional path,
    * such as `servers.RestServer.options#apiExplorer`
    */
   toAlias(keyWithPath: BindingAddress<T>) {
@@ -521,8 +540,7 @@ export class Binding<T = BoundValue> {
       debug('Bind %s to alias %s', this.key, keyWithPath);
     }
     this._type = BindingType.ALIAS;
-    this._setValueGetter((ctx, optionsOrSession) => {
-      const options = asResolutionOptions(optionsOrSession);
+    this._setValueGetter((ctx, options) => {
       return ctx.getValueOrPromise(keyWithPath, options);
     });
     return this;
@@ -537,10 +555,10 @@ export class Binding<T = BoundValue> {
   }
 
   /**
-   * Apply a template function to set up the binding with scope, tags, and
-   * other attributes as a group.
+   * Apply one or more template functions to set up the binding with scope,
+   * tags, and other attributes as a group.
    *
-   * For example,
+   * @example
    * ```ts
    * const serverTemplate = (binding: Binding) =>
    *   binding.inScope(BindingScope.SINGLETON).tag('server');
@@ -548,15 +566,20 @@ export class Binding<T = BoundValue> {
    * const serverBinding = new Binding<RestServer>('servers.RestServer1');
    * serverBinding.apply(serverTemplate);
    * ```
-   * @param templateFn A function to configure the binding
+   * @param templateFns - One or more functions to configure the binding
    */
-  apply(templateFn: BindingTemplate<T>): this {
-    templateFn(this);
+  apply(...templateFns: BindingTemplate<T>[]): this {
+    for (const fn of templateFns) {
+      fn(this);
+    }
     return this;
   }
 
+  /**
+   * Convert to a plain JSON object
+   */
   toJSON(): Object {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const json: {[name: string]: any} = {
       key: this.key,
       scope: this.scope,
@@ -573,9 +596,43 @@ export class Binding<T = BoundValue> {
    * A static method to create a binding so that we can do
    * `Binding.bind('foo').to('bar');` as `new Binding('foo').to('bar')` is not
    * easy to read.
-   * @param key Binding key
+   * @param key - Binding key
    */
   static bind<T = unknown>(key: BindingAddress<T>): Binding<T> {
-    return new Binding(key.toString());
+    return new Binding(key);
   }
+
+  /**
+   * Create a configuration binding for the given key
+   *
+   * @example
+   * ```ts
+   * const configBinding = Binding.configure('servers.RestServer.server1')
+   *   .to({port: 3000});
+   * ```
+   *
+   * @typeparam T Generic type for the configuration value (not the binding to
+   * be configured)
+   *
+   * @param key - Key for the binding to be configured
+   */
+  static configure<T = unknown>(key: BindingAddress): Binding<T> {
+    return new Binding(BindingKey.buildKeyForConfig<T>(key)).tag({
+      [ContextTags.CONFIGURATION_FOR]: key.toString(),
+    });
+  }
+}
+
+function createInterceptionProxyFromInstance<T>(
+  instOrPromise: ValueOrPromise<T>,
+  context: Context,
+) {
+  return transformValueOrPromise(instOrPromise, inst => {
+    if (typeof inst !== 'object') return inst;
+    return (createProxyWithInterceptors(
+      // Cast inst from `T` to `object`
+      (inst as unknown) as object,
+      context,
+    ) as unknown) as T;
+  });
 }

@@ -10,9 +10,9 @@ import {SchemaObject} from '@loopback/openapi-v3-types';
  * parameter's type.
  * `type` and `format` will be preserved if provided in `schema`
  *
- * @private
- * @param type The JavaScript type of a parameter
- * @param schema The schema object provided in an parameter object
+ * @internal
+ * @param type - The JavaScript type of a parameter
+ * @param schema - The schema object provided in an parameter object
  */
 export function resolveSchema(
   fn?: Function,

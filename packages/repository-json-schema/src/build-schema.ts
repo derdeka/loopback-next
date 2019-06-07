@@ -14,26 +14,79 @@ import {
 import {JSONSchema6 as JSONSchema} from 'json-schema';
 import {JSON_SCHEMA_KEY} from './keys';
 
+export interface JsonSchemaOptions {
+  visited?: {[key: string]: JSONSchema};
+}
+
 /**
  * Gets the JSON Schema of a TypeScript model/class by seeing if one exists
  * in a cache. If not, one is generated and then cached.
- * @param ctor Contructor of class to get JSON Schema from
+ * @param ctor - Contructor of class to get JSON Schema from
  */
-export function getJsonSchema(ctor: Function): JSONSchema {
-  // NOTE(shimks) currently impossible to dynamically update
-  const jsonSchema = MetadataInspector.getClassMetadata(JSON_SCHEMA_KEY, ctor);
-  if (jsonSchema) {
-    return jsonSchema;
+export function getJsonSchema(
+  ctor: Function,
+  options?: JsonSchemaOptions,
+): JSONSchema {
+  // In the near future the metadata will be an object with
+  // different titles as keys
+  const cached = MetadataInspector.getClassMetadata(JSON_SCHEMA_KEY, ctor);
+
+  if (cached) {
+    return cached;
   } else {
-    const newSchema = modelToJsonSchema(ctor);
+    const newSchema = modelToJsonSchema(ctor, options);
     MetadataInspector.defineMetadata(JSON_SCHEMA_KEY.key, newSchema, ctor);
     return newSchema;
   }
 }
 
 /**
+ * Describe the provided Model as a reference to a definition shared by multiple
+ * endpoints. The definition is included in the returned schema.
+ *
+ * @example
+ *
+ * ```ts
+ * const schema = {
+ *   $ref: '/definitions/Product',
+ *   definitions: {
+ *     Product: {
+ *       title: 'Product',
+ *       properties: {
+ *         // etc.
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * @param modelCtor - The model constructor (e.g. `Product`)
+ * @param options - Additional options
+ */
+export function getJsonSchemaRef(
+  modelCtor: Function,
+  options?: JsonSchemaOptions,
+): JSONSchema {
+  const schemaWithDefinitions = getJsonSchema(modelCtor, options);
+  const key = schemaWithDefinitions.title;
+
+  // ctor is not a model
+  if (!key) return schemaWithDefinitions;
+
+  const definitions = Object.assign({}, schemaWithDefinitions.definitions);
+  const schema = Object.assign({}, schemaWithDefinitions);
+  delete schema.definitions;
+  definitions[key] = schema;
+
+  return {
+    $ref: `#/definitions/${key}`,
+    definitions,
+  };
+}
+
+/**
  * Gets the wrapper function of primitives string, number, and boolean
- * @param type Name of type
+ * @param type - Name of type
  */
 export function stringTypeToWrapper(type: string | Function): Function {
   if (typeof type === 'function') {
@@ -79,7 +132,7 @@ export function stringTypeToWrapper(type: string | Function): Function {
 
 /**
  * Determines whether a given string or constructor is array type or not
- * @param type Type as string or wrapper
+ * @param type - Type as string or wrapper
  */
 export function isArrayType(type: string | Function) {
   return type === Array || type === 'array';
@@ -90,7 +143,6 @@ export function isArrayType(type: string | Function) {
  * @param meta
  */
 export function metaToJsonProperty(meta: PropertyDefinition): JSONSchema {
-  // tslint:disable-next-line:no-any
   const propDef: JSONSchema = {};
   let result: JSONSchema;
   let propertyType = meta.type as string | Function;
@@ -140,18 +192,28 @@ export function metaToJsonProperty(meta: PropertyDefinition): JSONSchema {
 /**
  * Converts a TypeScript class into a JSON Schema using TypeScript's
  * reflection API
- * @param ctor Constructor of class to convert from
+ * @param ctor - Constructor of class to convert from
  */
-export function modelToJsonSchema(ctor: Function): JSONSchema {
+export function modelToJsonSchema(
+  ctor: Function,
+  jsonSchemaOptions: JsonSchemaOptions = {},
+): JSONSchema {
+  const options = {...jsonSchemaOptions};
+  options.visited = options.visited || {};
+
   const meta: ModelDefinition | {} = ModelMetadataHelper.getModelMetadata(ctor);
-  const result: JSONSchema = {};
 
   // returns an empty object if metadata is an empty object
   if (!(meta instanceof ModelDefinition)) {
     return {};
   }
 
-  result.title = meta.title || ctor.name;
+  const title = meta.title || ctor.name;
+
+  if (options.visited[title]) return options.visited[title];
+
+  const result: JSONSchema = {title};
+  options.visited[title] = result;
 
   if (meta.description) {
     result.description = meta.description;
@@ -190,20 +252,24 @@ export function modelToJsonSchema(ctor: Function): JSONSchema {
       continue;
     }
 
-    const propSchema = getJsonSchema(referenceType);
+    const propSchema = getJsonSchema(referenceType, options);
 
-    if (propSchema && Object.keys(propSchema).length > 0) {
+    includeReferencedSchema(referenceType.name, propSchema);
+
+    function includeReferencedSchema(name: string, schema: JSONSchema) {
+      if (!schema || !Object.keys(schema).length) return;
       result.definitions = result.definitions || {};
 
-      // delete nested definition
-      if (propSchema.definitions) {
-        for (const key in propSchema.definitions) {
-          result.definitions[key] = propSchema.definitions[key];
+      // promote nested definition to the top level
+      if (schema.definitions) {
+        for (const key in schema.definitions) {
+          if (key === title) continue;
+          result.definitions[key] = schema.definitions[key];
         }
-        delete propSchema.definitions;
+        delete schema.definitions;
       }
 
-      result.definitions[referenceType.name] = propSchema;
+      result.definitions[name] = schema;
     }
   }
   return result;

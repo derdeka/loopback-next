@@ -17,9 +17,9 @@ import {ArtifactOptions} from '../interfaces';
  *
  * Supported phases: configure, discover, load
  *
- * @param app Application instance
- * @param projectRoot Root of User Project relative to which all paths are resolved
- * @param [bootConfig] Repository Artifact Options Object
+ * @param app - Application instance
+ * @param projectRoot - Root of User Project relative to which all paths are resolved
+ * @param bootConfig - Repository Artifact Options Object
  */
 export class RepositoryBooter extends BaseArtifactBooter {
   constructor(
@@ -55,7 +55,6 @@ export class RepositoryBooter extends BaseArtifactBooter {
         );
       } else {
         this.classes.forEach(cls => {
-          // tslint:disable-next-line:no-any
           this.app.repository(cls);
         });
       }

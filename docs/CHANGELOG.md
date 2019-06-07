@@ -3,6 +3,157 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.22.0...@loopback/docs@1.22.1) (2019-06-06)
+
+**Note:** Version bump only for package @loopback/docs
+
+
+
+
+
+# [1.22.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.21.1...@loopback/docs@1.22.0) (2019-06-06)
+
+
+### Features
+
+* **cli:** add lb4 interceptor command to generate interceptors ([58017b6](https://github.com/strongloop/loopback-next/commit/58017b6))
+
+
+
+
+
+## [1.21.1](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.21.0...@loopback/docs@1.21.1) (2019-06-03)
+
+**Note:** Version bump only for package @loopback/docs
+
+
+
+
+
+# [1.21.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.20.1...@loopback/docs@1.21.0) (2019-06-03)
+
+
+### Bug Fixes
+
+* **docs:** add type param to Filter and Where ([a1d88a9](https://github.com/strongloop/loopback-next/commit/a1d88a9))
+
+
+### Features
+
+* add navigational properties to find* methods ([1f0aa0b](https://github.com/strongloop/loopback-next/commit/1f0aa0b))
+* replace tslint with eslint ([44185a7](https://github.com/strongloop/loopback-next/commit/44185a7))
+
+
+
+
+
+## [1.20.1](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.20.0...@loopback/docs@1.20.1) (2019-05-31)
+
+**Note:** Version bump only for package @loopback/docs
+
+
+
+
+
+# [1.20.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.19.0...@loopback/docs@1.20.0) (2019-05-30)
+
+
+### Features
+
+* **build:** add eslint scripts and default configs ([a6abe86](https://github.com/strongloop/loopback-next/commit/a6abe86))
+* **cli:** add `lb4 relation` command ([75939a4](https://github.com/strongloop/loopback-next/commit/75939a4))
+* **tsdocs:** add integration with api-extractor/documenter ([c8d9572](https://github.com/strongloop/loopback-next/commit/c8d9572))
+
+
+
+
+
+# [1.19.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.18.0...@loopback/docs@1.19.0) (2019-05-23)
+
+
+### Bug Fixes
+
+* **docs:** add life cycle observer cli to sidebar ([224f446](https://github.com/strongloop/loopback-next/commit/224f446))
+
+
+### Features
+
+* **context:** support binding config and [@inject](https://github.com/inject).config ([a392852](https://github.com/strongloop/loopback-next/commit/a392852))
+
+
+
+
+
+# [1.18.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.17.1...@loopback/docs@1.18.0) (2019-05-14)
+
+
+### Features
+
+* **context:** add binding comparator to sort bindings ([ae3d61f](https://github.com/strongloop/loopback-next/commit/ae3d61f))
+* add lb3 application ([bf60011](https://github.com/strongloop/loopback-next/commit/bf60011))
+
+
+
+
+
+## [1.17.1](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.17.0...@loopback/docs@1.17.1) (2019-05-10)
+
+**Note:** Version bump only for package @loopback/docs
+
+
+
+
+
+# [1.17.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.16.1...@loopback/docs@1.17.0) (2019-05-09)
+
+
+### Features
+
+* **context:** add support for method interceptors ([293188d](https://github.com/strongloop/loopback-next/commit/293188d))
+
+
+
+
+
+## [1.16.1](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.16.0...@loopback/docs@1.16.1) (2019-05-06)
+
+
+### Bug Fixes
+
+* **docs:** update Service-static-files.md to fix a typo ([1d35a68](https://github.com/strongloop/loopback-next/commit/1d35a68))
+* **example-todo-list:** add steps to run in sql db ([0122211](https://github.com/strongloop/loopback-next/commit/0122211))
+
+
+
+
+
+# [1.16.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.15.0...@loopback/docs@1.16.0) (2019-04-26)
+
+
+### Features
+
+* add booter-lb3app package ([993a97f](https://github.com/strongloop/loopback-next/commit/993a97f))
+
+
+
+
+
+# [1.15.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.14.0...@loopback/docs@1.15.0) (2019-04-20)
+
+
+### Bug Fixes
+
+* **docs:** fix sequence levels ([47350c3](https://github.com/strongloop/loopback-next/commit/47350c3))
+
+
+### Features
+
+* **context:** add `[@inject](https://github.com/inject).binding` and improve `[@inject](https://github.com/inject).setter` ([a396274](https://github.com/strongloop/loopback-next/commit/a396274))
+
+
+
+
+
 # [1.14.0](https://github.com/strongloop/loopback-next/compare/@loopback/docs@1.13.0...@loopback/docs@1.14.0) (2019-04-11)
 
 
