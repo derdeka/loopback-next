@@ -3,9 +3,9 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Entity, EntityResolver} from '../../model';
-import {relation} from '../relation.decorator';
-import {HasManyDefinition, RelationType} from '../relation.types';
+import { Entity, EntityResolver } from '../../model';
+import { relation } from '../relation.decorator';
+import { HasManyDefinition, HasManyThroughDefinition, RelationType } from '../relation.types';
 
 /**
  * Decorator for hasMany
@@ -17,7 +17,7 @@ import {HasManyDefinition, RelationType} from '../relation.types';
  */
 export function hasMany<T extends Entity>(
   targetResolver: EntityResolver<T>,
-  definition?: Partial<HasManyDefinition>,
+  definition?: Partial<HasManyDefinition | HasManyThroughDefinition>,
 ) {
   return function(decoratedTarget: object, key: string) {
     const meta: HasManyDefinition = Object.assign(

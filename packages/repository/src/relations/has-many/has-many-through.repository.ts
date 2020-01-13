@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {Count, DataObject, Entity, Filter, Options, Where} from '../..';
+import { Count, DataObject, Entity, EntityCrudRepository, Filter, Getter, Options, Where } from '../..';
 
 /**
  * CRUD operations for a target repository of a HasManyThrough relation
@@ -11,8 +11,8 @@ import {Count, DataObject, Entity, Filter, Options, Where} from '../..';
 export interface HasManyThroughRepository<
   Target extends Entity,
   TargetID,
-  Through extends Entity
-> {
+  Through extends Entity,
+  > {
   /**
    * Create a target model instance
    * @param targetModelData - The target model data
@@ -21,7 +21,7 @@ export interface HasManyThroughRepository<
    */
   create(
     targetModelData: DataObject<Target>,
-    options: Options & {
+    options?: Options & {
       throughData?: DataObject<Through>;
       throughOptions?: Options;
     },
@@ -94,4 +94,76 @@ export interface HasManyThroughRepository<
       throughOptions?: Options;
     },
   ): Promise<void>;
+}
+
+export class DefaultHasManyThroughRepository<
+  TargetEntity extends Entity,
+  TargetID,
+  TargetRepository extends EntityCrudRepository<TargetEntity, TargetID>,
+  ThroughEntity extends Entity,
+  ThroughID,
+  ThroughRepository extends EntityCrudRepository<ThroughEntity, ThroughID>,
+  > implements HasManyThroughRepository<TargetEntity, TargetID, ThroughEntity> {
+
+  constructor(
+    public targetRepositoryGetter: Getter<TargetRepository>,
+    public throughRepositoryGetter: Getter<ThroughRepository>,
+  ) {}
+
+  async create(
+    targetModelData: DataObject<TargetEntity>,
+    options?: Options & {
+      throughData?: DataObject<ThroughEntity>;
+      throughOptions?: Options;
+    },
+  ): Promise<TargetEntity> {
+    throw new Error("Method not implemented.");
+  }
+
+  async find(
+    filter?: Filter<TargetEntity>,
+    options?: Options & {
+      throughOptions?: Options;
+    },
+  ): Promise<TargetEntity[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  delete(
+    where?: Where<TargetEntity>,
+    options?: Options & {
+      throughOptions?: Options;
+    },
+  ): Promise<Count> {
+    throw new Error("Method not implemented.");
+  }
+
+  patch(
+    dataObject: DataObject<TargetEntity>,
+    where?: Where<TargetEntity>,
+    options?: Options & {
+      throughOptions?: Options;
+    },
+  ): Promise<Count> {
+    throw new Error("Method not implemented.");
+  }
+
+  link(
+    targetModelId: TargetID,
+    options?: Options & {
+      throughData?: DataObject<ThroughEntity>;
+      throughOptions?: Options;
+    },
+  ): Promise<TargetEntity> {
+    throw new Error("Method not implemented.");
+  }
+
+  unlink(
+    targetModelId: TargetID,
+    options?: Options & {
+      throughOptions?: Options;
+    },
+  ): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
